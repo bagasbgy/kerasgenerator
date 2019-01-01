@@ -5,7 +5,7 @@
 
 `kerasgenerator` contain some data generator functions which designed to
 make the data preparation process for
-[`keras`](https://keras.rstudio.com)’s
+[`keras`](https://keras.rstudio.com)’
 [`fit_generator()`](https://keras.rstudio.com/reference/fit_generator.html)
 easier.
 

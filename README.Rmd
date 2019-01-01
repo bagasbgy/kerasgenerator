@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 
 # kerasgenerator <img src="man/figures/logo.png" align="right" height=140/>
 
-`kerasgenerator` contain some data generator functions which designed to make the data preparation process for [`keras`](https://keras.rstudio.com)'s [`fit_generator()`](https://keras.rstudio.com/reference/fit_generator.html) easier.
+`kerasgenerator` contain some data generator functions which designed to make the data preparation process for [`keras`](https://keras.rstudio.com)' [`fit_generator()`](https://keras.rstudio.com/reference/fit_generator.html) easier.
 
 ## Installation
 
