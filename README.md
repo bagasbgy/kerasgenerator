@@ -1,3 +1,5 @@
+[![TODO board](https://imdone.io/api/1.0/projects/5c2bb73a379a0e1831fbc64a/badge)](https://imdone.io/app#/board/bagasbgy/kerasgenerator)
+
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
