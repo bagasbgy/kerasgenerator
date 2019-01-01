@@ -1,0 +1,56 @@
+---
+title: "Data Generator for Various Keras Time Series Model"
+author: "R. Dimas Bagas Herlambang"
+date: "`r Sys.Date()`"
+bibliography: bibliography.bib
+csl: apa.csl
+link-citations: yes
+output:
+  rmarkdown::html_vignette:
+    fig_caption: no
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Introduction to Data Generator for Time Series Model
+
+Preparing a proper dataset for a supervised time series model sometimes could become very complex and tedious. There are some tutorials that already cover this kind of task: check out the tutorial made by [Dancho and Keydana](https://blogs.rstudio.com/tensorflow/posts/2018-06-25-sunspots-lstm/) [-@dancho2018predicting] for basic univariate model fitting without using data generator, and the one made by [Chollet and Allaire](https://blogs.rstudio.com/tensorflow/posts/2017-12-20-time-series-forecasting-with-recurrent-neural-networks/) [-@chollet2017time] for the multivariate model with a custom data generator. However, as you could see from the articles, there are no general framework on how to properly do the data preparation process.
+
+In this article we will show you how `kerasgenerator` could help us in preparing a data generator for supervised time series [`keras`](https://keras.rstudio.com) models.
+
+## Understanding the Time Series Array Shape
+
+To fit a supervised time series model, many of `keras`' functions expect the target and feature data to be in an `array` object with a specific number of dimension. The input and output `array` need to have at least three dimension that representing:
+
+1. Observation index
+2. Number of timesteps
+3. Number of distinct feature / target
+
+You can imagine the `array` shape to be like this:
+
+<!-- insert image -->
+
+To understand better what each dimensions representing, let's follow a quick example using the popular [Sunspots](http://www.sidc.be/silso/datafiles) dataset [@sidc]. We will use the monthly total mean version:
+
+```{r, message=FALSE, warning=FALSE}
+
+# import libs
+library(tidyverse)
+
+# import dataset
+sunspot_tbl <- read_delim("data/SN_m_tot_V2.0.csv", delim = ";", col_names = FALSE)
+
+# quick check
+glimpse(sunspot_tbl)
+
+```
+
+The dataset is in a general time series format--it contains a time identifier column, each row representing a timestep, and it is regularly ordered.
+
+# Data Generator for Univariate Time Series
+
+# Data Generator for Multivariate Time Series
+
+# References

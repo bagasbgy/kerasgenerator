@@ -6,8 +6,6 @@ output: github_document
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
   fig.path = "man/figures/README-",
   out.width = "100%"
 )
@@ -22,8 +20,10 @@ knitr::opts_chunk$set(
 The package is in early development stage and currently only available via GitHub. You can install the development version using this way:
 
 ```{r, eval=FALSE}
-# Install development version from GitHub
+
+# Install the development version from GitHub
 devtools::install_github("bagasbgy/kerasgenerator")
+
 ```
 
 ## Further Development
