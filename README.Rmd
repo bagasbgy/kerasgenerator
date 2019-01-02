@@ -28,6 +28,6 @@ devtools::install_github("bagasbgy/kerasgenerator")
 
 ## Further Development
 
-- Support for generating data from **file in specified path**
-- Support for incorporating [`recipes`](https://tidymodels.github.io/recipes/) package for **data preprocessing**
-- Data generator for **k-shot learning** model fitting
+* Support for generating data from **file in specified path**
+* Support for incorporating [`recipes`](https://tidymodels.github.io/recipes/) package for **data preprocessing**
+* Data generator for **k-shot learning** model fitting

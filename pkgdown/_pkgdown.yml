@@ -7,7 +7,6 @@ development:
 
 reference:
   - title: Time Series Generators
-    desc:  Various time series data generator functions.
     contents:
       - forecast_generator
       - series_generator

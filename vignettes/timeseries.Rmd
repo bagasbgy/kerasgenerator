@@ -1,5 +1,5 @@
 ---
-title: "Data Generator for Various Keras Time Series Model"
+title: "Data Generator for Time Series Model"
 author: "R. Dimas Bagas Herlambang"
 date: "`r Sys.Date()`"
 bibliography: bibliography.bib
@@ -9,10 +9,16 @@ output:
   rmarkdown::html_vignette:
     fig_caption: no
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{Data Generator for Time Series Model}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  out.width = "100%"
+)
+```
 
 # Introduction to Data Generator for Time Series Model
 
@@ -47,7 +53,96 @@ glimpse(sunspot_tbl)
 
 ```
 
-The dataset is in a general time series format--it contains a time identifier column, each row representing a timestep, and it is regularly ordered.
+The dataset is in a general time series format--it contains a time identifier column, each row representing a timestep, and it is regularly ordered. Before we move further, let's do a quick data preprocess:
+
+```{r, message=FALSE, warning=FALSE}
+
+# import libs
+library(lubridate)
+library(magrittr)
+
+# data preprocess
+sunspot_tbl %<>%
+
+  # select and rename relevant variables
+  select(year = X1, month = X2, sunspots = X4) %>%
+
+  # some data manipulation
+  mutate(
+    date = paste(year, month, "01", sep = "-") %>% ymd(),
+    sunspots = str_squish(sunspots) %>% as.numeric()
+  ) %>%
+
+  # keep only relevant variables
+  select(date, sunspots)
+
+# quick check
+glimpse(sunspot_tbl)
+
+```
+
+In supervised time series model, we need to define two important parameters for our datasets. The first parameter is the **lookback period**. The lookback period is determining **how many period behind should the targets look-up for its signal**, but it should be noted that **the periods in-between will be ignored**. The second parameter is the **timestep length**. This parameter define the length of an observation of features that would be considered as a sequence of signal for the target.
+
+```{r, message=FALSE, warning=FALSE}
+
+# import libs
+library(tidyquant)
+
+# set some parameters
+lookback <- 12
+timesteps <- 12
+
+# specify the target and feature
+target <- tail(sunspot_tbl$date, 1)
+feature_end <- target - months(lookback)
+feature_start <- feature_end - months(timesteps) + months(1)
+
+# illustration
+sunspot_tbl %>%
+  tail(30) %>%
+  mutate(
+    label = case_when(
+      date == target ~ "Target",
+      date %in% seq(feature_start, feature_end, by = "1 month") ~ "Feature",
+      TRUE ~ "Ignored"
+    )
+  ) %>%
+  ggplot(aes(x = date, y = sunspots)) +
+    geom_line() +
+    geom_point(aes(colour = label)) +
+    annotate(
+      geom = "rect",
+      xmin = feature_start, xmax = feature_end,
+      ymin = -Inf, ymax = Inf,
+      alpha = 0.1, fill = "#2c3e50"
+    ) +
+    annotate(
+      geom = "text",
+      x = feature_start, y = 47.5,
+      label = expression("One observation of feature\nwith 12 timesteps"),
+      colour = "#2c3e50",
+      hjust = -0.1375
+    ) +
+    annotate(
+      geom = "text",
+      x = target, y = 16.5,
+      label = "One observation of target",
+      colour = "#18BC9C",
+      hjust = 0.05,
+      angle = 90
+    ) +
+    annotate(
+      geom = "segment",
+      x = target, xend = target,
+      y = 15, yend = 7.5,
+      colour = "#18BC9C",
+      arrow = arrow()
+    ) +
+    labs(x = "", y = "", colour = "") +
+    theme_tq() +
+    scale_colour_tq()
+
+```
 
 # Data Generator for Univariate Time Series
 
