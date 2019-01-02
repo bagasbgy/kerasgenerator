@@ -1,5 +1,5 @@
 Package: kerasgenerator
-Title: Data Generator for Various Deep Learning Scenarios using Keras
+Title: Data Generator for R interface to Keras
 Version: 0.1.1
 Authors@R:
   person(

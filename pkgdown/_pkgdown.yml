@@ -1,12 +1,10 @@
 authors:
   R. Dimas Bagas Herlambang:
     href: https://bagasbgy.netlify.com
-
 development:
   mode: auto
-
 reference:
-  - title: Time Series Generators
+  - title: Data Generator for Time Series Models
     contents:
       - forecast_generator
       - series_generator
