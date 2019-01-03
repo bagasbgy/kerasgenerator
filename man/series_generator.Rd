@@ -4,17 +4,17 @@
 \alias{series_generator}
 \title{Time series data generator for training and testing}
 \usage{
-series_generator(data, y, x, lookback, timesteps, start_index = NULL,
-  end_index = NULL, batch_size, return_target = TRUE)
+series_generator(data, x, y, lookback, timesteps, start_index, end_index,
+  batch_size, return_target = TRUE)
 }
 \arguments{
-\item{data}{A data frame containing the time series data.}
-
-\item{y}{Numeric or character vectors that identify
-which column(s) in the \code{data} is/are the target(s).}
+\item{data}{A data frame or matrix containing the time series data.}
 
 \item{x}{Numeric or character vectors that identify
 which column(s) in the \code{data} is/are the feature(s).}
+
+\item{y}{Numeric or character vectors that identify
+which column(s) in the \code{data} is/are the target(s).}
 
 \item{lookback}{A numeric vector which identify
 the number of lookback period.}

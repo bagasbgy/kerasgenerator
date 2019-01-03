@@ -14,19 +14,23 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r setup, include = FALSE}
-knitr::opts_chunk$set(
-  out.width = "100%"
-)
-```
+```{r setup, include=FALSE}
 
-# Introduction to Data Generator for Time Series Model {#intro}
+# chunk opts
+knitr::opts_chunk$set(
+  warning = FALSE,
+  message = FALSE,
+  fig.align = "center",
+  out.width = "85%"
+)
+
+```
 
 Preparing a proper dataset for a supervised time series model sometimes could become very complex and tedious. There are some tutorials that already cover this kind of task: check out the tutorial made by [Dancho and Keydana](https://blogs.rstudio.com/tensorflow/posts/2018-06-25-sunspots-lstm/) [-@dancho2018predicting] for basic univariate model fitting without using data generator, and the one made by [Chollet and Allaire](https://blogs.rstudio.com/tensorflow/posts/2017-12-20-time-series-forecasting-with-recurrent-neural-networks/) [-@chollet2017time] for the multivariate model with a custom data generator. However, as you could see from the articles, there are no general framework on how to properly do the data preparation process.
 
 In this article we will show you how `kerasgenerator` could help us in preparing a data generator for supervised time series [`keras`](https://keras.rstudio.com) models.
 
-## Understanding the Time Series Array Shape
+# Understanding the Time Series Array Shape {#introduction}
 
 To fit a supervised time series model, many of `keras`' functions expect the target and feature data to be in an `array` object with a specific number of dimension. The input and output `array` need to have at least three dimension that representing:
 
@@ -40,13 +44,17 @@ You can imagine the `array` shape to be like this:
 
 To understand better what each dimensions representing, let's follow a quick example using the popular [Sunspots](http://www.sidc.be/silso/datafiles) dataset [@sidc]. We will use the monthly total mean version:
 
-```{r, message=FALSE, warning=FALSE}
+```{r}
 
 # import libs
 library(tidyverse)
 
 # import dataset
-sunspot_tbl <- read_delim("data/SN_m_tot_V2.0.csv", delim = ";", col_names = FALSE)
+sunspot_tbl <- read_delim(
+  file = "data/SN_m_tot_V2.0.csv",
+  delim = ";",
+  col_names = FALSE
+)
 
 # quick check
 glimpse(sunspot_tbl)
@@ -55,7 +63,7 @@ glimpse(sunspot_tbl)
 
 The dataset is in a general time series format--it contains a time identifier column, each row representing a timestep, and it is regularly ordered. Before we move further, let's do a quick data preprocess:
 
-```{r, message=FALSE, warning=FALSE}
+```{r}
 
 # import libs
 library(lubridate)
@@ -65,16 +73,16 @@ library(magrittr)
 sunspot_tbl %<>%
 
   # select and rename relevant variables
-  select(year = X1, month = X2, sunspots = X4) %>%
+  select(year = X1, month = X2, sunspot = X4) %>%
 
   # some data manipulation
   mutate(
     date = paste(year, month, "01", sep = "-") %>% ymd(),
-    sunspots = str_squish(sunspots) %>% as.numeric()
+    sunspot = str_squish(sunspot) %>% as.numeric()
   ) %>%
 
   # keep only relevant variables
-  select(date, sunspots)
+  select(date, sunspot)
 
 # quick check
 glimpse(sunspot_tbl)
@@ -83,12 +91,9 @@ glimpse(sunspot_tbl)
 
 In supervised time series model, we need to define two important parameters for our datasets. The first parameter is the **lookback period**. The lookback period is determining **how many period behind should the targets look-up for its signal**, but it should be noted that **the periods in-between will be skipped**. The second parameter is the **timestep length**. This parameter define **the length of an observation of features** that would be considered as a sequence of signal for the target. **Note** that the terms that I just mentioned might be differ from other source, but I really suggest you to read the original paper of [Long Short-Term Memory](https://www.bioinf.jku.at/publications/older/2604.pdf) layer [@hochreiter1997long] and other valid sources to reach a better understanding of the terminologies.
 
-Now let's make some illustration using our dataset to make it clear. Supposed that we want to predict the value of current mean total sunspots using the value from the same month in the previous year, but we also want to consider the yearly seasonality--hence, a 12-months sequence. Say, we pick the last observation of our dataset--the mean total sunspots in December 2018--as our target, then we can illustrate the model like this:
+Now let's make some illustration using our dataset to make it clear. Supposed that we want to predict the value of current mean total sunspots using the value from the same month in the previous year, but we also want to consider the yearly seasonality--hence, a 12-months sequence. Say, we pick the last observation of our dataset--the mean total sunspots in December 2018--as our target, then the target and features will be:
 
-```{r, message=FALSE, warning=FALSE}
-
-# import libs
-library(tidyquant)
+```{r}
 
 # set some parameters
 lookback <- 12
@@ -99,27 +104,35 @@ target <- tail(sunspot_tbl$date, 1)
 feature_end <- target - months(lookback)
 feature_start <- feature_end - months(timesteps) + months(1)
 
+```
+
+Notice that I set the `feature_start` to be `feature_end - months(timesteps) + months(1)`. This is because the `timesteps` value is representing how long is our feature--without `+ 1`, the timesteps would be 13. See the following figure for an illustration:
+
+```{r, echo=FALSE, fig.cap="Supervised time series model illustration"}
+
+# import libs
+library(tidyquant)
+
 # illustration
 sunspot_tbl %>%
   tail(30) %>%
   mutate(
     label = case_when(
       date == target ~ "Target",
-      date >= feature_start & date <= feature_end ~ "Feature",
-      date > feature_end & date < target ~ "Skipped",
-      TRUE ~ "Ignored"
+      date < target & date > feature_end ~ "Skipped",
+      date <= feature_end & date >= feature_start ~ "Feature",
+      TRUE ~ "Excluded"
     )
   ) %>%
-  ggplot(aes(x = date, y = sunspots)) +
+  ggplot(aes(x = date, y = sunspot)) +
     geom_line() +
     geom_point(aes(colour = label)) +
     annotate(
       geom = "text",
       x = target,
-      y = 16.5,
+      y = 18.5,
       label = "Target",
-      colour = "#e31a1c",
-      hjust = 0.1,
+      colour = "darkred",
       angle = 90
     ) +
     annotate(
@@ -128,7 +141,7 @@ sunspot_tbl %>%
       xend = target,
       y = 15,
       yend = 7.5,
-      colour = "#e31a1c",
+      colour = "darkred",
       arrow = arrow()
     ) +
     annotate(
@@ -136,7 +149,7 @@ sunspot_tbl %>%
       x = target,
       y = 20,
       label = "Lookback to",
-      colour = "#18BC9C",
+      colour = "darkgreen",
       hjust = 1.25
     ) +
     annotate(
@@ -145,16 +158,15 @@ sunspot_tbl %>%
       xend = feature_end + days(15),
       y = 17.5,
       yend = 17.5,
-      colour = "#18BC9C",
+      colour = "darkgreen",
       arrow = arrow()
     ) +
     annotate(
       geom = "text",
-      x = feature_start,
-      y = 47.5,
+      x = feature_start + floor((feature_end - feature_start) / 2),
+      y = 49,
       label = "Feature with 12 timesteps",
-      colour = "#1f78b4",
-      hjust = -0.1375
+      colour = "darkblue"
     ) +
     annotate(
       geom = "rect",
@@ -163,19 +175,30 @@ sunspot_tbl %>%
       ymin = -Inf,
       ymax = Inf,
       alpha = 0.1,
-      fill = "#1f78b4"
+      fill = "darkblue"
     ) +
-    labs(x = "", y = "", colour = "") +
+    labs(x = NULL, y = NULL) +
     theme_tq() +
+    theme(
+      legend.position = c(0.9, 0.825),
+      legend.direction = "vertical",
+      legend.title = element_blank(),
+      legend.background = element_rect(
+        fill = "white",
+        color = "black",
+        size = 0.25,
+        linetype = "solid"
+      )
+    ) +
     scale_colour_manual(
       values = c(
-        "Ignored" = "#2c3e50",
-        "Feature" = "#1f78b4",
-        "Skipped" = "#18BC9C",
-        "Target" = "#e31a1c"
+        "Excluded" = "black",
+        "Feature" = "darkblue",
+        "Skipped" = "darkgreen",
+        "Target" = "darkred"
       ),
       breaks = c(
-        "Ignored",
+        "Excluded",
         "Feature",
         "Skipped",
         "Target"
@@ -184,12 +207,51 @@ sunspot_tbl %>%
 
 ```
 
-Notice that I set the `feature_start` to be `feature_end - months(timesteps) + months(1)`. This is because the `timesteps` value is representing how long is our feature--so without `+ 1`, the timesteps would be 13.
+If we follow this format, then we could convert the data into `array` matrices like this:
 
-Basically, the `series_generator()` is transforming your data into this format; the same with `forecast_generator()`, but without `lookback` parameter (see [forecasting section](#forecast) for further explanation). Let's take a look on how those function in action in the following sections.
+```{r}
+
+# container arrays
+x_array <- array(0, dim = c(1, timesteps, 1))
+y_array <- array(0, dim = c(1, 1, 1))
+
+# specify the row indices
+y_row <- nrow(sunspot_tbl)
+x_row <- y_row - lookback
+
+# adjust the x indices according to the timesteps
+x_indices <- seq(
+  from = x_row - timesteps + 1,
+  to = x_row
+)
+
+# convert the table into matrix
+sunspot_matrix <- data.matrix(sunspot_tbl)
+
+# fill the arrays
+x_array[1, , ] <- sunspot_matrix[x_indices, 2]
+y_array[1, , ] <- sunspot_matrix[y_row, 2]
+
+```
+
+Let's confirm the content inside the arrays:
+
+```{r}
+
+# check the structure
+str(x_array)
+str(y_array)
+
+# check the data
+x_array[1, , ]
+y_array[1, , ]
+
+```
+
+Basically, the [`series_generator()`](/reference/series_generator) function is transforming your data into the format similar to above explanation; [`forecast_generator()`]((/reference/forecast_generator)) also works in a similar way, but disregards any attributes related to `y` (see [forecasting section](#forecast) for further explanation). Let's take a look on how those functions in action in the following sections.
 
 # Fitting a Time Series Model using Data Generator {#fitting}
 
 # Forecasting using Data Generator {#forecast}
 
-# References
+# References {#reference}

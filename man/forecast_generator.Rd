@@ -4,11 +4,10 @@
 \alias{forecast_generator}
 \title{Time series data generator for forecasting}
 \usage{
-forecast_generator(data, x, timesteps, start_index = NULL,
-  end_index = NULL, batch_size)
+forecast_generator(data, x, timesteps, start_index, end_index, batch_size)
 }
 \arguments{
-\item{data}{A data frame containing the time series data.}
+\item{data}{A data frame or matrix containing the time series data.}
 
 \item{x}{Numeric or character vectors that identify
 which column(s) in the \code{data} is/are the feature(s).}

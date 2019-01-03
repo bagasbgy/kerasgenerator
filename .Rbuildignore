@@ -2,6 +2,6 @@
 ^LICENSE\.md$
 ^kerasgenerator\.Rproj$
 ^\.Rproj\.user$
-^docs$
 ^\.git$
 ^\.gitignore$
+^docs$

@@ -5,11 +5,11 @@
 #'
 #' @family time series generators
 #'
-#' @param data A data frame containing the time series data.
-#' @param y Numeric or character vectors that identify
-#'  which column(s) in the \code{data} is/are the target(s).
+#' @param data A data frame or matrix containing the time series data.
 #' @param x Numeric or character vectors that identify
 #'  which column(s) in the \code{data} is/are the feature(s).
+#' @param y Numeric or character vectors that identify
+#'  which column(s) in the \code{data} is/are the target(s).
 #' @param lookback A numeric vector which identify
 #'  the number of lookback period.
 #' @param timesteps A numeric vector which identify
@@ -34,40 +34,49 @@
 # time series generator
 series_generator <- function(
 
-  data, y, x, lookback, timesteps,
-  start_index = NULL, end_index = NULL,
-  batch_size, return_target = TRUE
+  data, x, y, lookback, timesteps,
+  start_index, end_index, batch_size,
+  return_target = TRUE
 
   ) {
-
+  
+  # stop if data is not a proper object
+  if (!inherits(data, c("data.frame", "matrix")))
+    stop("'data' must be an object of 'data.frame' or 'matrix'")
+  
+  # convert if data.frame
+  if ("data.frame" %in% class(data)) data <- data.matrix(data)
+  
   # check start & end index
   if (is.null(start_index)) start_index <- 1
   if (is.null(end_index)) end_index <- nrow(data)
-
+  
+  # set some initial params
+  n_col_x <- length(x)
+  n_col_y <- length(y)
+  
   # start iterator
   i <- start_index
 
+  # return an iterator
   function() {
-
+    
     # reset iterator if already seen all data
     if ((i + batch_size - 1) > end_index) i <<- start_index
 
-    # y rows
+    # current batch params
     y_rows <- c(i:min(i + batch_size - 1, end_index))
-
+    n_sample <- length(y_rows)
+    
     # update to next iteration
     i <<- i + batch_size
 
-    # arrays dim
-    x_dim <- c(length(y_rows), timesteps, length(x))
-    if (return_target == FALSE) y_dim <- c(length(y_rows), 1, length(y))
-
-    # array containers
-    x_array <- array(0, dim = x_dim)
-    if (return_target == FALSE) y_array <- array(0, dim = y_dim)
+    # create container arrays
+    x_array <- array(0, dim = c(n_sample, timesteps, n_col_x))
+    if (return_target) y_array <- array(0, dim = c(n_sample, 1, n_col_y))
 
     # fill the container
-    for (j in 1:length(y_rows)) {
+    for (j in 1:n_sample) {
 
       # adjust x row by lookback
       x_row <- y_rows[j] - lookback
@@ -80,12 +89,12 @@ series_generator <- function(
 
       # fill the arrays
       x_array[j, , ] <- data[x_indices, x]
-      if (return_target == FALSE) y[j, , ] <- data[y_rows[j], y]
+      if (return_target) y_array[j, , ] <- data[y_rows[j], y]
 
     }
 
     # return the batch
-    if (return_target == TRUE) list(x)
+    if (!return_target) list(x_array)
     else list(x_array, y_array)
 
   }
@@ -109,53 +118,64 @@ series_generator <- function(
 # time series forecast generator
 forecast_generator <- function(
 
-  data, x, timesteps, start_index = NULL, end_index = NULL, batch_size
+  data, x, timesteps,
+  start_index, end_index,
+  batch_size
 
   ) {
+    
+  # stop if data is not a proper object
+  if (!inherits(data, c("data.frame", "matrix")))
+    stop("'data' must be an object of 'data.frame' or 'matrix'")
+  
+  # convert if data.frame
+  if ("data.frame" %in% class(data)) data <- data.matrix(data)
 
   # check start & end index
   if (is.null(start_index)) start_index <- 1
   if (is.null(end_index)) end_index <- nrow(data)
 
+  # set some initial params
+  n_col_x <- length(x)
+
   # start iterator
   i <- start_index
 
+  # return an iterator
   function() {
 
     # reset iterator if already seen all data
     if ((i + batch_size - 1) > end_index) i <<- start_index
 
-    # sample rows
-    sample_rows <- c(i:min(i + batch_size - 1, end_index))
+    # current batch params
+    x_rows <- c(i:min(i + batch_size - 1, end_index))
+    n_sample <- length(x_rows)
 
     # update to next iteration
     i <<- i + batch_size
 
-    # samples dims
-    samples_dim <- c(length(sample_rows), timesteps, length(x))
-
-    # array container for sample
-    samples <- array(0, dim = samples_dim)
+    # # create container array
+    x_array <- array(0, dim = c(n_sample, timesteps, n_col_x))
 
     # fill the container
-    for (j in 1:length(sample_rows)) {
+    for (j in 1:length(x_rows)) {
 
-      # sample row
-      sample_row <- sample_rows[j]
+      # x row
+      x_row <- x_rows[j]
 
-      # select sample indices according to timesteps
-      sample_indices <- seq(
-        from = sample_row - timesteps + 1,
-        to = sample_row
+      # select x indices according to timesteps
+      x_indices <- seq(
+        from = x_row - timesteps + 1,
+        to = x_row
       )
 
-      # fill the sample array
-      samples[j, , ] <- data[sample_indices, x]
+      # fill the x array
+      x_array[j, , ] <- data[x_indices, x]
 
     }
 
     # return the batch
-    list(samples)
+    list(x_array)
 
   }
 
