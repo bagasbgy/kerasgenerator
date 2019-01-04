@@ -15,7 +15,7 @@ The package is in early development stage and currently only available
 via GitHub. You can install the development version using this way:
 
 ``` r
-# Install development version from GitHub
+# Install the development version from GitHub
 devtools::install_github("bagasbgy/kerasgenerator")
 ```
 
