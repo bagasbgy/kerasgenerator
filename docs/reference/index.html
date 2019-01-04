@@ -37,10 +37,9 @@
 
 
 
+  <link href="../extra.css" rel="stylesheet">
+  
 <meta property="og:title" content="Function reference" />
-
-<meta property="og:image" content="/logo.png" />
-<meta name="twitter:card" content="summary" />
 
 
 
@@ -70,7 +69,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">kerasgenerator</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.1</span>
       </span>
     </div>
 
@@ -84,6 +83,18 @@
 </li>
 <li>
   <a href="../reference/index.html">Reference</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/timeseries.html">Data Generator for Time Series Models</a>
+    </li>
+  </ul>
 </li>
 <li>
   <a href="../news/index.html">Changelog</a>
@@ -123,8 +134,8 @@
     <tbody>
       <tr>
         <th colspan="2">
-          <h2 id="section-time-series-generators" class="hasAnchor"><a href="#section-time-series-generators" class="anchor"></a>Time Series Generators</h2>
-          <p class="section-desc"><p>Various time series data generator functions.</p></p>
+          <h2 id="section-data-generator-for-time-series-models" class="hasAnchor"><a href="#section-data-generator-for-time-series-models" class="anchor"></a>Data Generator for Time Series Models</h2>
+          <p class="section-desc"></p>
         </th>
       </tr>
       <tr>
@@ -132,13 +143,13 @@
         <td>
           <p><code><a href="forecast_generator.html">forecast_generator()</a></code> </p>
         </td>
-        <td><p>Time series data generator for forecasting</p></td>
+        <td><p>Data generator for forecasting using time series Keras model</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="series_generator.html">series_generator()</a></code> </p>
         </td>
-        <td><p>Time series data generator for training and testing</p></td>
+        <td><p>Data generator for training or testing a time series Keras model</p></td>
       </tr>
     </tbody>
     </table>
@@ -147,7 +158,7 @@
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-      <li><a href="#section-time-series-generators">Time Series Generators</a></li>
+      <li><a href="#section-data-generator-for-time-series-models">Data Generator for Time Series Models</a></li>
     </ul>
   </div>
 </div>

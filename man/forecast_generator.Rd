@@ -2,37 +2,41 @@
 % Please edit documentation in R/timeseries_generator.R
 \name{forecast_generator}
 \alias{forecast_generator}
-\title{Time series data generator for forecasting}
+\title{Data generator for forecasting using time series Keras model}
 \usage{
-forecast_generator(data, x, timesteps, start_index = NULL,
-  end_index = NULL, batch_size)
+forecast_generator(data, x, timesteps = 1, start_index = NULL,
+  end_index = NULL, batch_size = 32, prep_funs = NULL)
 }
 \arguments{
-\item{data}{A data frame containing the time series data.}
+\item{data}{A \code{data.frame} or \code{matrix} containing
+the time series data.}
 
-\item{x}{Numeric or character vectors that identify
+\item{x}{\code{numeric} or \code{character} vectors that identify
 which column(s) in the \code{data} is/are the feature(s).}
 
-\item{timesteps}{A numeric vector which identify
+\item{timesteps}{A \code{numeric} vector which identify
 the number of timesteps length.}
 
-\item{start_index}{A numeric vector which identify
+\item{start_index}{A \code{numeric} vector which identify
 the first row index of the the \code{data}
 that would be included as a sample.}
 
-\item{end_index}{A numeric vector which identify
+\item{end_index}{A \code{numeric} vector which identify
 the first row index of the the \code{data}
 that would be included as a sample.}
 
-\item{batch_size}{A numeric vector which identify
+\item{batch_size}{A \code{numeric} vector which identify
 how many observation is considered as a batch.}
+
+\item{prep_funs}{A custom function for preprocess the \code{data}
+on the fly, optional.}
 }
 \value{
-The generator will returning and object of \code{list} containing
-a batch of \code{x} arrays.
+The generator will returning an object of \code{list} containing
+a batch of \code{x_array}.
 }
 \description{
-A data generator function for forecasting
+A data generator function for forecasting using
 a supervised time series Keras model
 }
 \seealso{

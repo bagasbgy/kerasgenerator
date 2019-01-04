@@ -2,47 +2,54 @@
 % Please edit documentation in R/timeseries_generator.R
 \name{series_generator}
 \alias{series_generator}
-\title{Time series data generator for training and testing}
+\title{Data generator for training or testing a time series Keras model}
 \usage{
-series_generator(data, y, x, lookback, timesteps, start_index = NULL,
-  end_index = NULL, batch_size, return_target = TRUE)
+series_generator(data, x, y, lookback = 1, timesteps = 1,
+  start_index = NULL, end_index = NULL, batch_size = 32,
+  return_target = TRUE, prep_funs = NULL)
 }
 \arguments{
-\item{data}{A data frame containing the time series data.}
+\item{data}{A \code{data.frame} or \code{matrix} containing
+the time series data.}
 
-\item{y}{Numeric or character vectors that identify
-which column(s) in the \code{data} is/are the target(s).}
-
-\item{x}{Numeric or character vectors that identify
+\item{x}{\code{numeric} or \code{character} vectors that identify
 which column(s) in the \code{data} is/are the feature(s).}
 
-\item{lookback}{A numeric vector which identify
+\item{y}{\code{numeric} or \code{character} vectors that identify
+which column(s) in the \code{data} is/are the target(s).}
+
+\item{lookback}{A \code{numeric} vector which identify
 the number of lookback period.}
 
-\item{timesteps}{A numeric vector which identify
+\item{timesteps}{A \code{numeric} vector which identify
 the number of timesteps length.}
 
-\item{start_index}{A numeric vector which identify
+\item{start_index}{A \code{numeric} vector which identify
 the first row index of the the \code{data}
 that would be included as a sample.}
 
-\item{end_index}{A numeric vector which identify
+\item{end_index}{A \code{numeric} vector which identify
 the first row index of the the \code{data}
 that would be included as a sample.}
 
-\item{batch_size}{A numeric vector which identify
+\item{batch_size}{A \code{numeric} vector which identify
 how many observation is considered as a batch.}
 
-\item{return_target}{A boolean indicating if the generator.
+\item{return_target}{A \code{boolean} indicating if the generator.
 should return the target or not.}
+
+\item{prep_funs}{A custom function for preprocess the \code{data}
+on the fly, optional.}
 }
 \value{
 If \code{return_target} is set to \code{TRUE},
-the generator will returning and object of \code{list} containing
-a batch of \code{x} and \code{y arrays}.
+the generator will returning an object of \code{list} containing
+a batch of \code{x_array} and \code{y_array}; otherwise,
+it only returns an object of \code{list} containing
+a batch of \code{x_array}
 }
 \description{
-A data generator function for training and testing
+A data generator function for training or testing
 a supervised time series Keras model
 }
 \seealso{

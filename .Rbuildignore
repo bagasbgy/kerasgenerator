@@ -1,7 +1,12 @@
 ^README\.Rmd$
-^LICENSE\.md$
+
 ^kerasgenerator\.Rproj$
 ^\.Rproj\.user$
-^docs$
+
 ^\.git$
 ^\.gitignore$
+
+^docs$
+
+^update_progress\.Rmd$
+^update_site\.Rmd$

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Time series data generator for forecasting — forecast_generator • kerasgenerator</title>
+<title>Data generator for forecasting using time series Keras model — forecast_generator • kerasgenerator</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -37,12 +37,12 @@
 
 
 
-<meta property="og:title" content="Time series data generator for forecasting — forecast_generator" />
+  <link href="../extra.css" rel="stylesheet">
+  
+<meta property="og:title" content="Data generator for forecasting using time series Keras model — forecast_generator" />
 
-<meta property="og:description" content="A data generator function for forecasting
+<meta property="og:description" content="A data generator function for forecasting using
 a supervised time series Keras model" />
-
-<meta property="og:image" content="/logo.png" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -73,7 +73,7 @@ a supervised time series Keras model" />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">kerasgenerator</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.1</span>
       </span>
     </div>
 
@@ -87,6 +87,18 @@ a supervised time series Keras model" />
 </li>
 <li>
   <a href="../reference/index.html">Reference</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/timeseries.html">Data Generator for Time Series Models</a>
+    </li>
+  </ul>
 </li>
 <li>
   <a href="../news/index.html">Changelog</a>
@@ -112,61 +124,67 @@ a supervised time series Keras model" />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Time series data generator for forecasting</h1>
+    <h1>Data generator for forecasting using time series Keras model</h1>
     <small class="dont-index">Source: <a href='https://github.com/bagasbgy/kerasgenerator/blob/master/R/timeseries_generator.R'><code>R/timeseries_generator.R</code></a></small>
     <div class="hidden name"><code>forecast_generator.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>A data generator function for forecasting
+    <p>A data generator function for forecasting using
 a supervised time series Keras model</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>forecast_generator</span>(<span class='no'>data</span>, <span class='no'>x</span>, <span class='no'>timesteps</span>, <span class='kw'>start_index</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>end_index</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>batch_size</span>)</pre>
+    <pre class="usage"><span class='fu'>forecast_generator</span>(<span class='no'>data</span>, <span class='no'>x</span>, <span class='kw'>timesteps</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>start_index</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>end_index</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>batch_size</span> <span class='kw'>=</span> <span class='fl'>32</span>, <span class='kw'>prep_funs</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>data</th>
-      <td><p>A data frame containing the time series data.</p></td>
+      <td><p>A <code>data.frame</code> or <code>matrix</code> containing
+the time series data.</p></td>
     </tr>
     <tr>
       <th>x</th>
-      <td><p>Numeric or character vectors that identify
+      <td><p><code>numeric</code> or <code>character</code> vectors that identify
 which column(s) in the <code>data</code> is/are the feature(s).</p></td>
     </tr>
     <tr>
       <th>timesteps</th>
-      <td><p>A numeric vector which identify
+      <td><p>A <code>numeric</code> vector which identify
 the number of timesteps length.</p></td>
     </tr>
     <tr>
       <th>start_index</th>
-      <td><p>A numeric vector which identify
+      <td><p>A <code>numeric</code> vector which identify
 the first row index of the the <code>data</code>
 that would be included as a sample.</p></td>
     </tr>
     <tr>
       <th>end_index</th>
-      <td><p>A numeric vector which identify
+      <td><p>A <code>numeric</code> vector which identify
 the first row index of the the <code>data</code>
 that would be included as a sample.</p></td>
     </tr>
     <tr>
       <th>batch_size</th>
-      <td><p>A numeric vector which identify
+      <td><p>A <code>numeric</code> vector which identify
 how many observation is considered as a batch.</p></td>
+    </tr>
+    <tr>
+      <th>prep_funs</th>
+      <td><p>A custom function for preprocess the <code>data</code>
+on the fly, optional.</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>The generator will returning and object of <code>list</code> containing
-a batch of <code>x</code> arrays.</p>
+    <p>The generator will returning an object of <code>list</code> containing
+a batch of <code>x_array</code>.</p>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
