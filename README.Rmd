@@ -10,7 +10,7 @@ knitr::opts_chunk$set(
   message = FALSE,
   fig.path = "man/figures/README-",
   fig.align = "center",
-  out.width = "85%"
+  out.width = "100%"
 )
 ```
 

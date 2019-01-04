@@ -148,7 +148,7 @@
 <a class="sourceLine" id="cb3-13" data-line-number="13">      <span class="dt">label =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/scales/topics/number_format">unit_format</a></span>(<span class="dt">unit =</span> <span class="st">"M"</span>, <span class="dt">scale =</span> <span class="fl">1e-09</span>, <span class="dt">accuracy =</span> <span class="fl">0.01</span>)</a>
 <a class="sourceLine" id="cb3-14" data-line-number="14">    ) <span class="op">+</span></a>
 <a class="sourceLine" id="cb3-15" data-line-number="15"><span class="st">    </span><span class="kw"><a href="https://www.rdocumentation.org/packages/tidyquant/topics/theme_tq">theme_tq</a></span>()</a></code></pre></div>
-<p><img src="timeseries_files/figure-html/unnamed-chunk-2-1.png" width="85%" style="display: block; margin: auto;"></p>
+<p><img src="timeseries_files/figure-html/unnamed-chunk-2-1.png" width="100%" style="display: block; margin: auto;"></p>
 <p>In supervised time series model, we need to define two important parameters for our datasets. The first parameter is the <strong>lookback period</strong>. The lookback period is determining <strong>how many period behind should the targets look-up for its signal</strong>, but it should be noted that <strong>the periods in-between will be skipped</strong>. The second parameter is the <strong>timestep length</strong>. This parameter define <strong>the length of an observation of features</strong> that would be considered as a sequence of signal for the target. <strong>Note</strong> that the terms that I just mentioned might be differ from other source, but I really suggest you to read the original paper of <a href="https://www.bioinf.jku.at/publications/older/2604.pdf">Long Short-Term Memory</a> layer <span class="citation">(Hochreiter &amp; Schmidhuber, <a href="#ref-hochreiter1997long">1997</a>)</span> and other valid sources to reach a better understanding of the terminologies.</p>
 <p>Now let’s make some illustration using our dataset to make it clear. Supposed that we want to predict the value of 5-minutes total traffic using the traffic pattern in the previous hour. If, we pick the last observation of our dataset as our target, then the target and features will be:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="co"># import libs</span></a>
@@ -164,7 +164,7 @@
 <a class="sourceLine" id="cb4-11" data-line-number="11">feature_start &lt;-<span class="st"> </span>feature_end <span class="op">-</span><span class="st"> </span><span class="dv">5</span> <span class="op">*</span><span class="st"> </span><span class="kw"><a href="http://lubridate.tidyverse.org/reference/period.html">minutes</a></span>(timesteps) <span class="op">+</span><span class="st"> </span><span class="kw"><a href="http://lubridate.tidyverse.org/reference/period.html">minutes</a></span>(<span class="dv">5</span>)</a></code></pre></div>
 <p>Notice that I set the <code>feature_start</code> to be <code>feature_end - timesteps + 1</code>–the <code>+ 1</code> is represented by <code><a href="http://lubridate.tidyverse.org/reference/period.html">minutes(5)</a></code> in this case. This is because the <code>timesteps</code> value is representing how long is our feature–without <code>+ 1</code>, the timesteps would be longer by 1 value. See the following figure for an illustration:</p>
 <div class="figure" style="text-align: center">
-<img src="timeseries_files/figure-html/unnamed-chunk-4-1.png" alt="Supervised time series model illustration" width="85%"><p class="caption">
+<img src="timeseries_files/figure-html/unnamed-chunk-4-1.png" alt="Supervised time series model illustration" width="100%"><p class="caption">
 Supervised time series model illustration
 </p>
 </div>
@@ -358,7 +358,7 @@ Supervised time series model illustration
 <a class="sourceLine" id="cb15-12" data-line-number="12"></a>
 <a class="sourceLine" id="cb15-13" data-line-number="13"><span class="co"># history plot</span></a>
 <a class="sourceLine" id="cb15-14" data-line-number="14"><span class="kw"><a href="https://www.rdocumentation.org/packages/graphics/topics/plot">plot</a></span>(history)</a></code></pre></div>
-<p><img src="timeseries_files/figure-html/unnamed-chunk-11-1.png" width="85%" style="display: block; margin: auto;"></p>
+<p><img src="timeseries_files/figure-html/unnamed-chunk-11-1.png" width="100%" style="display: block; margin: auto;"></p>
 <p>You can also pass the generator to <a href="(https://keras.rstudio.com/reference/evaluate_generator.html)"><code><a href="https://www.rdocumentation.org/packages/keras/topics/evaluate_generator">evaluate_generator()</a></code></a> to evaluate the results:</p>
 <div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" data-line-number="1"><span class="co"># evaluate on validation dataset</span></a>
 <a class="sourceLine" id="cb16-2" data-line-number="2">model <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/keras/topics/evaluate_generator">evaluate_generator</a></span>(</a>
@@ -366,7 +366,7 @@ Supervised time series model illustration
 <a class="sourceLine" id="cb16-4" data-line-number="4">  <span class="dt">steps =</span> val_steps</a>
 <a class="sourceLine" id="cb16-5" data-line-number="5">)</a></code></pre></div>
 <pre><code>##      loss 
-## 0.1387452</code></pre>
+## 0.0808951</code></pre>
 </div>
 <div id="forecast" class="section level1">
 <h1 class="hasAnchor">
@@ -401,7 +401,7 @@ Supervised time series model illustration
 <a class="sourceLine" id="cb19-16" data-line-number="16"></a>
 <a class="sourceLine" id="cb19-17" data-line-number="17"><span class="co"># check the structure</span></a>
 <a class="sourceLine" id="cb19-18" data-line-number="18"><span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/str">str</a></span>(fcast)</a></code></pre></div>
-<pre><code>##  num [1:288, 1] 2.71 2.71 2.71 2.71 2.71 ...</code></pre>
+<pre><code>##  num [1:288, 1] 2.65 2.65 2.65 2.65 2.65 ...</code></pre>
 </div>
 <div id="reference" class="section level1 unnumbered">
 <h1 class="hasAnchor">
