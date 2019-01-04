@@ -8,7 +8,7 @@ Authors@R:
     role = c("aut", "cre", "cph"),
     email = "bagasbgy@gmail.com"
   )
-Description: A package containing some keras data generator functions for various deep learning scenario. Designed to make data generation process for fitting a keras model easier.
+Description: Some Keras data generator functions for various deep learning scenario. Designed to make data generation process for fitting a Keras model easier.
 License: MIT + file LICENSE
 URL: https://github.com/bagasbgy/kerasgenerator
 BugReports: https://github.com/bagasbgy/kerasgenerator/issues
@@ -17,5 +17,5 @@ Language: en-US
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 6.1.1
-Suggests: 
+Suggests:
     testthat

@@ -52,7 +52,7 @@ test_that("Generated output's dimension is equal to specified parameter", {
   
   # test x and y dimension
   expect_equal(dim(x_sample), c(batch_size, timesteps, length(x)))
-  expect_equal(dim(y_sample), c(batch_size, 1, length(y)))
+  expect_equal(dim(y_sample), c(batch_size, length(y)))
   
 })
 
@@ -66,9 +66,9 @@ test_that("Generated output's dimension is identical to original data", {
   expect_equal(x_sample[2, , 2], data[2:11, "y"])
   
   # test if y array identical to original data
-  expect_equal(y_sample[1, , 1], data[20, "y"])
-  expect_equal(y_sample[2, , 1], data[21, "y"])
-  expect_equal(y_sample[1, , 2], data[20, "z"])
-  expect_equal(y_sample[2, , 2], data[21, "z"])
+  expect_equal(y_sample[1, 1], data[20, "y"])
+  expect_equal(y_sample[2, 1], data[21, "y"])
+  expect_equal(y_sample[1, 2], data[20, "z"])
+  expect_equal(y_sample[2, 2], data[21, "z"])
   
 })
