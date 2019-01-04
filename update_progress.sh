@@ -8,7 +8,7 @@ printf '\n\nBuilding documentation...'
 printf '\n--------------------\n\n'
 
 # remove existing documentations
-rm -rf man
+rm -rf man/*.Rd
 
 # build documentation
 Rscript -e 'devtools::document()'
