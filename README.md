@@ -15,7 +15,7 @@ via GitHub. You can install the development version using
 
 ``` r
 # install devtools first if you haven't
-if (!require(devtools)) install.package("devtools")
+if (!require(devtools)) install.packages("devtools")
 
 # install the development version from GitHub
 devtools::install_github("bagasbgy/kerasgenerator")
