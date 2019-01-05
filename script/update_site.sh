@@ -28,3 +28,6 @@ rm -rf docs
 
 # build documentation
 Rscript -e 'pkgdown::build_site()'
+
+# add redirect from old website
+echo "https://kerasgenerator.netlify.com/* https://kerasgenerator.bagasbgy.com/:splat 301!" > docs/_redirect
