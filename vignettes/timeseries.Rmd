@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
   warning = FALSE,
   message = FALSE,
   fig.align = "center",
-  out.width = "85%"
+  out.width = "100%"
 )
 
 ```
@@ -121,7 +121,7 @@ traffic_tbl %>%
     annotate(
       geom = "text",
       x = target,
-      y = 7.15 * 1e+09,
+      y = 7.10 * 1e+09,
       label = "Target",
       colour = "darkred",
       angle = 90
@@ -138,7 +138,7 @@ traffic_tbl %>%
     annotate(
       geom = "text",
       x = feature_start + difftime(feature_end, feature_start) / 2,
-      y = 7.15 * 1e+09,
+      y = 7.10 * 1e+09,
       label = glue::glue(
         "A sequence feature", "\n",
         "with {timesteps} timesteps"

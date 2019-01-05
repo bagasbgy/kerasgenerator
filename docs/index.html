@@ -96,19 +96,22 @@
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#kerasgenerator" class="anchor"></a>kerasgenerator <img src="reference/figures/logo.svg" align="right" height="140/">
 </h1></div>
-<p><code>kerasgenerator</code> package is shipped with some data generator functions, which are designed to make the data generation process for <a href="https://keras.rstudio.com"><code>keras</code></a>’ model easier.</p>
+<p><code>kerasgenerator</code> package is shipped with some data generator functions, which are designed to make the data generation process for <a href="https://keras.rstudio.com"><code>keras</code></a> models easier.</p>
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"></a>Installation</h2>
-<p>The package is in early development stage and currently only available via GitHub. You can install the development version using <code>install_github()</code>:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="co"># Install the development version from GitHub</span></a>
-<a class="sourceLine" id="cb1-2" data-line-number="2">devtools<span class="op">::</span><span class="kw"><a href="https://www.rdocumentation.org/packages/devtools/topics/reexports">install_github</a></span>(<span class="st">"bagasbgy/kerasgenerator"</span>)</a></code></pre></div>
+<p>The package is in early development stage and currently only available via GitHub. You can install the development version using <a href="http://devtools.r-lib.org/reference/install_github"><code><a href="https://www.rdocumentation.org/packages/devtools/topics/reexports">install_github()</a></code></a>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="co"># install devtools first if you haven't</span></a>
+<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="cf">if</span> (<span class="op">!</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">require</a></span>(devtools)) <span class="kw">install.package</span>(<span class="st">"devtools"</span>)</a>
+<a class="sourceLine" id="cb1-3" data-line-number="3"></a>
+<a class="sourceLine" id="cb1-4" data-line-number="4"><span class="co"># install the development version from GitHub</span></a>
+<a class="sourceLine" id="cb1-5" data-line-number="5">devtools<span class="op">::</span><span class="kw"><a href="https://www.rdocumentation.org/packages/devtools/topics/reexports">install_github</a></span>(<span class="st">"bagasbgy/kerasgenerator"</span>)</a></code></pre></div>
 </div>
 <div id="further-development" class="section level2">
 <h2 class="hasAnchor">
 <a href="#further-development" class="anchor"></a>Further Development</h2>
 <ul>
-<li>Support for generating data from <strong>file in specified path</strong>
+<li>Support for generating data from <strong>file(s) in specified path</strong>
 </li>
 <li>Data generator for <strong>k-shot learning</strong> model fitting</li>
 </ul>
