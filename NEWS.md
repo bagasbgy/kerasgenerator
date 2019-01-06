@@ -1,3 +1,7 @@
+# kerasgenerator 0.1.2
+
+* Revamped `forecast_generator()` functions.
+
 # kerasgenerator 0.1.1
 
 Time series generator functions now have a proper basic functionality and documentation. Some changes related to time series generator:
