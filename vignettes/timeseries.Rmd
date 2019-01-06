@@ -236,8 +236,8 @@ train_end <- val_start - 1
 train_start <- train_end - train_length + 1
 
 # number of steps to see full data
-train_steps <- train_length / batch_size
-val_steps <- val_length / batch_size
+train_steps <- ceiling(train_length / batch_size)
+val_steps <- ceiling(val_length / batch_size)
 
 ```
 
@@ -402,37 +402,37 @@ Like in [`series_generator()`](/reference/series_generator) function, we need to
 ```{r}
 
 # forecast horizon
-forecast_horizon <- 12 * 24
+horizon <- 12
 
 # forecast indices
-forecast_end <- nrow(traffic_tbl)
-forecast_start <- forecast_end - forecast_horizon + 1
+last_index <- nrow(traffic_tbl)
 
 # number of steps to see full data
-forecast_steps <- forecast_horizon / batch_size
+fcast_steps <- ceiling(horizon / batch_size)
 
 ```
 
-Note that the **forecast horizon should not be greater than the value of `batch_size`**.
+Note that the **forecast `horizon` should not be greater than the value of `lookback` if you want to forecast from the last observation**.
 
 Then, we can proceed to define the generator and pass it to [`predict_generator()`]((https://keras.rstudio.com/reference/predict_generator.html)) function:
 
 ```{r}
 
 # forecast generator
-forecast_gen <- forecast_generator(
+fcast_gen <- forecast_generator(
   data = traffic_tbl,
   x = x,
+  lookback = lookback,
   timesteps = timesteps,
-  start_index = forecast_start,
-  end_index = forecast_end,
+  last_index = last_index,
+  horizon = horizon,
   batch_size = batch_size
 )
 
 # forecast using generator
 fcast <- model %>% predict_generator(
-  generator = forecast_gen,
-  steps = forecast_steps
+  generator = fcast_gen,
+  steps = fcast_steps
 )
 
 # check the structure

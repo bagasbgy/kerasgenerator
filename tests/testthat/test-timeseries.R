@@ -4,11 +4,6 @@
 # test context
 context("Time Series Generator Output")
 
-# load libs
-library(testthat)
-library(keras)
-library(kerasgenerator)
-
 # example data
 data <- data.frame(
   x = runif(100),
