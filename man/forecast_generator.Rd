@@ -4,8 +4,8 @@
 \alias{forecast_generator}
 \title{Data generator for forecasting using time series Keras model}
 \usage{
-forecast_generator(data, x, timesteps = 1, start_index = NULL,
-  end_index = NULL, batch_size = 32, prep_funs = NULL)
+forecast_generator(data, x, lookback = 1, timesteps = 1,
+  last_index = NULL, horizon = 1, batch_size = 1, prep_funs = NULL)
 }
 \arguments{
 \item{data}{A \code{data.frame} or \code{matrix} containing
@@ -14,16 +14,11 @@ the time series data.}
 \item{x}{\code{numeric} or \code{character} vectors that identify
 which column(s) in the \code{data} is/are the feature(s).}
 
+\item{lookback}{A \code{numeric} vector which identify
+the number of lookback period.}
+
 \item{timesteps}{A \code{numeric} vector which identify
 the number of timesteps length.}
-
-\item{start_index}{A \code{numeric} vector which identify
-the first row index of the the \code{data}
-that would be included as a sample.}
-
-\item{end_index}{A \code{numeric} vector which identify
-the first row index of the the \code{data}
-that would be included as a sample.}
 
 \item{batch_size}{A \code{numeric} vector which identify
 how many observation is considered as a batch.}

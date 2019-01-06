@@ -38,7 +38,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">kerasgenerator</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.2</span>
       </span>
     </div>
 
@@ -91,7 +91,7 @@
       <h1>Data Generator for Time Series Models</h1>
                         <h4 class="author">R. Dimas Bagas Herlambang</h4>
             
-            <h4 class="date">Last updated on: January 5, 2019</h4>
+            <h4 class="date">Last updated on: January 6, 2019</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/bagasbgy/kerasgenerator/blob/master/vignettes/timeseries.Rmd"><code>vignettes/timeseries.Rmd</code></a></small>
       <div class="hidden name"><code>timeseries.Rmd</code></div>
@@ -223,8 +223,8 @@ Supervised time series model illustration
 <a class="sourceLine" id="cb10-19" data-line-number="19">train_start &lt;-<span class="st"> </span>train_end <span class="op">-</span><span class="st"> </span>train_length <span class="op">+</span><span class="st"> </span><span class="dv">1</span></a>
 <a class="sourceLine" id="cb10-20" data-line-number="20"></a>
 <a class="sourceLine" id="cb10-21" data-line-number="21"><span class="co"># number of steps to see full data</span></a>
-<a class="sourceLine" id="cb10-22" data-line-number="22">train_steps &lt;-<span class="st"> </span>train_length <span class="op">/</span><span class="st"> </span>batch_size</a>
-<a class="sourceLine" id="cb10-23" data-line-number="23">val_steps &lt;-<span class="st"> </span>val_length <span class="op">/</span><span class="st"> </span>batch_size</a></code></pre></div>
+<a class="sourceLine" id="cb10-22" data-line-number="22">train_steps &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Round">ceiling</a></span>(train_length <span class="op">/</span><span class="st"> </span>batch_size)</a>
+<a class="sourceLine" id="cb10-23" data-line-number="23">val_steps &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Round">ceiling</a></span>(val_length <span class="op">/</span><span class="st"> </span>batch_size)</a></code></pre></div>
 <p>Before we continue, let’s define a custom function for data preprocessing on the fly. We will use <a href="https://tidymodels.github.io/recipes/"><code>recipes</code></a> functionality within our custom function:</p>
 <div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" data-line-number="1"><span class="co"># import libs</span></a>
 <a class="sourceLine" id="cb11-2" data-line-number="2"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(recipes)</a>
@@ -366,42 +366,42 @@ Supervised time series model illustration
 <a class="sourceLine" id="cb16-4" data-line-number="4">  <span class="dt">steps =</span> val_steps</a>
 <a class="sourceLine" id="cb16-5" data-line-number="5">)</a></code></pre></div>
 <pre><code>##       loss 
-## 0.05212595</code></pre>
+## 0.05479006</code></pre>
 </div>
 <div id="forecast" class="section level1">
 <h1 class="hasAnchor">
 <a href="#forecast" class="anchor"></a>Forecasting using Data Generator</h1>
 <p>Like in <a href="/reference/series_generator"><code><a href="../reference/series_generator.html">series_generator()</a></code></a> function, we need to specify some parameters for <a href="/reference/forecast_generator"><code><a href="../reference/forecast_generator.html">forecast_generator()</a></code></a>:</p>
 <div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" data-line-number="1"><span class="co"># forecast horizon</span></a>
-<a class="sourceLine" id="cb18-2" data-line-number="2">forecast_horizon &lt;-<span class="st"> </span><span class="dv">12</span> <span class="op">*</span><span class="st"> </span><span class="dv">24</span></a>
+<a class="sourceLine" id="cb18-2" data-line-number="2">horizon &lt;-<span class="st"> </span><span class="dv">12</span></a>
 <a class="sourceLine" id="cb18-3" data-line-number="3"></a>
 <a class="sourceLine" id="cb18-4" data-line-number="4"><span class="co"># forecast indices</span></a>
-<a class="sourceLine" id="cb18-5" data-line-number="5">forecast_end &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(traffic_tbl)</a>
-<a class="sourceLine" id="cb18-6" data-line-number="6">forecast_start &lt;-<span class="st"> </span>forecast_end <span class="op">-</span><span class="st"> </span>forecast_horizon <span class="op">+</span><span class="st"> </span><span class="dv">1</span></a>
-<a class="sourceLine" id="cb18-7" data-line-number="7"></a>
-<a class="sourceLine" id="cb18-8" data-line-number="8"><span class="co"># number of steps to see full data</span></a>
-<a class="sourceLine" id="cb18-9" data-line-number="9">forecast_steps &lt;-<span class="st"> </span>forecast_horizon <span class="op">/</span><span class="st"> </span>batch_size</a></code></pre></div>
-<p>Note that the <strong>forecast horizon should not be greater than the value of <code>batch_size</code></strong>.</p>
+<a class="sourceLine" id="cb18-5" data-line-number="5">last_index &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/nrow">nrow</a></span>(traffic_tbl)</a>
+<a class="sourceLine" id="cb18-6" data-line-number="6"></a>
+<a class="sourceLine" id="cb18-7" data-line-number="7"><span class="co"># number of steps to see full data</span></a>
+<a class="sourceLine" id="cb18-8" data-line-number="8">fcast_steps &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Round">ceiling</a></span>(horizon <span class="op">/</span><span class="st"> </span>batch_size)</a></code></pre></div>
+<p>Note that the <strong>forecast <code>horizon</code> should not be greater than the value of <code>lookback</code> if you want to forecast from the last observation</strong>.</p>
 <p>Then, we can proceed to define the generator and pass it to <a href="(https://keras.rstudio.com/reference/predict_generator.html)"><code><a href="https://www.rdocumentation.org/packages/keras/topics/predict_generator">predict_generator()</a></code></a> function:</p>
 <div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" data-line-number="1"><span class="co"># forecast generator</span></a>
-<a class="sourceLine" id="cb19-2" data-line-number="2">forecast_gen &lt;-<span class="st"> </span><span class="kw"><a href="../reference/forecast_generator.html">forecast_generator</a></span>(</a>
+<a class="sourceLine" id="cb19-2" data-line-number="2">fcast_gen &lt;-<span class="st"> </span><span class="kw"><a href="../reference/forecast_generator.html">forecast_generator</a></span>(</a>
 <a class="sourceLine" id="cb19-3" data-line-number="3">  <span class="dt">data =</span> traffic_tbl,</a>
 <a class="sourceLine" id="cb19-4" data-line-number="4">  <span class="dt">x =</span> x,</a>
-<a class="sourceLine" id="cb19-5" data-line-number="5">  <span class="dt">timesteps =</span> timesteps,</a>
-<a class="sourceLine" id="cb19-6" data-line-number="6">  <span class="dt">start_index =</span> forecast_start,</a>
-<a class="sourceLine" id="cb19-7" data-line-number="7">  <span class="dt">end_index =</span> forecast_end,</a>
-<a class="sourceLine" id="cb19-8" data-line-number="8">  <span class="dt">batch_size =</span> batch_size</a>
-<a class="sourceLine" id="cb19-9" data-line-number="9">)</a>
-<a class="sourceLine" id="cb19-10" data-line-number="10"></a>
-<a class="sourceLine" id="cb19-11" data-line-number="11"><span class="co"># forecast using generator</span></a>
-<a class="sourceLine" id="cb19-12" data-line-number="12">fcast &lt;-<span class="st"> </span>model <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/keras/topics/predict_generator">predict_generator</a></span>(</a>
-<a class="sourceLine" id="cb19-13" data-line-number="13">  <span class="dt">generator =</span> forecast_gen,</a>
-<a class="sourceLine" id="cb19-14" data-line-number="14">  <span class="dt">steps =</span> forecast_steps</a>
-<a class="sourceLine" id="cb19-15" data-line-number="15">)</a>
-<a class="sourceLine" id="cb19-16" data-line-number="16"></a>
-<a class="sourceLine" id="cb19-17" data-line-number="17"><span class="co"># check the structure</span></a>
-<a class="sourceLine" id="cb19-18" data-line-number="18"><span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/str">str</a></span>(fcast)</a></code></pre></div>
-<pre><code>##  num [1:288, 1] 2.73 2.73 2.73 2.73 2.73 ...</code></pre>
+<a class="sourceLine" id="cb19-5" data-line-number="5">  <span class="dt">lookback =</span> lookback,</a>
+<a class="sourceLine" id="cb19-6" data-line-number="6">  <span class="dt">timesteps =</span> timesteps,</a>
+<a class="sourceLine" id="cb19-7" data-line-number="7">  <span class="dt">last_index =</span> last_index,</a>
+<a class="sourceLine" id="cb19-8" data-line-number="8">  <span class="dt">horizon =</span> horizon,</a>
+<a class="sourceLine" id="cb19-9" data-line-number="9">  <span class="dt">batch_size =</span> batch_size</a>
+<a class="sourceLine" id="cb19-10" data-line-number="10">)</a>
+<a class="sourceLine" id="cb19-11" data-line-number="11"></a>
+<a class="sourceLine" id="cb19-12" data-line-number="12"><span class="co"># forecast using generator</span></a>
+<a class="sourceLine" id="cb19-13" data-line-number="13">fcast &lt;-<span class="st"> </span>model <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/keras/topics/predict_generator">predict_generator</a></span>(</a>
+<a class="sourceLine" id="cb19-14" data-line-number="14">  <span class="dt">generator =</span> fcast_gen,</a>
+<a class="sourceLine" id="cb19-15" data-line-number="15">  <span class="dt">steps =</span> fcast_steps</a>
+<a class="sourceLine" id="cb19-16" data-line-number="16">)</a>
+<a class="sourceLine" id="cb19-17" data-line-number="17"></a>
+<a class="sourceLine" id="cb19-18" data-line-number="18"><span class="co"># check the structure</span></a>
+<a class="sourceLine" id="cb19-19" data-line-number="19"><span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/str">str</a></span>(fcast)</a></code></pre></div>
+<pre><code>##  num [1:12, 1] 2.75 2.75 2.75 2.75 2.75 ...</code></pre>
 </div>
 <div id="reference" class="section level1 unnumbered">
 <h1 class="hasAnchor">
