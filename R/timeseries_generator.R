@@ -145,7 +145,7 @@ forecast_generator <- function(
 
   data, x, lookback = 1, timesteps = 1,
   last_index = NULL, horizon = 1,
-  batch_size = 32, prep_funs = NULL
+  batch_size = 1, prep_funs = NULL
 
   ) {
     
@@ -155,31 +155,32 @@ forecast_generator <- function(
   
   # sample index
   if (is.null(last_index)) last_index <- nrow(data)
-  last_index <- last_index - lookback
-  first_index <- last_index - horizon + 1
+  end_index <- last_index + horizon
+  start_index <- end_index - horizon + 1
 
   # set some global params
   n_col_x <- length(x)
 
   # start iterator
-  i <- first_index
+  i <- start_index
 
   # return an iterator
   function() {
 
     # stop iterator if already seen all data
-    if ((i + batch_size - 1) > last_index) {
+    if ((i + batch_size - 1) > end_index) {
       
       # give warning message
       message("The generator has seen all data, resetting to first batch.")
       
       # reset the iterator
-      i <<- first_index
+      i <<- start_index
       
     }
 
-    # iterate current batch's target rows
-    x_rows <- c(i:min(i + batch_size - 1, last_index))
+    # iterate current batch's x rows
+    y_rows <- c(i:min(i + batch_size - 1, end_index))
+    x_rows <- y_rows - lookback
     
     # update to next iteration
     i <<- i + batch_size
@@ -201,7 +202,7 @@ forecast_generator <- function(
     if (!is.null(prep_funs)) batch <- prep_funs(batch)
     if (inherits(batch, "data.frame")) batch <- data.matrix(batch)
 
-    # # create container array
+    # create container array
     x_array <- array(0, dim = c(n_sample, timesteps, n_col_x))
 
     # fill the container

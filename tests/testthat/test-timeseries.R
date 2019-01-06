@@ -203,20 +203,20 @@ test_that("generators could be used for fit, evaluate, and predict", {
 )
 
 # forecast and predict on validation
-val_pred <- model %>% predict_generator(
-  generator = val_pred_gen,
-  steps = val_steps
-)
-
 val_fcast <- model %>% predict_generator(
   generator = train_fcast_gen,
   steps = fcast_steps
+)
+val_pred <- model %>% predict_generator(
+  generator = val_pred_gen,
+  steps = val_steps
 )
 
 # test forecast output
 test_that("output from forecast on generator is as expected", {
 
     # test if output is identical to reference
+    expect_equal(dim(val_fcast), dim(val_pred))
     expect_equal(val_fcast, val_pred)
     
   }

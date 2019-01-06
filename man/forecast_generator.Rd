@@ -5,8 +5,7 @@
 \title{Data generator for forecasting using time series Keras model}
 \usage{
 forecast_generator(data, x, lookback = 1, timesteps = 1,
-  last_index = NULL, horizon = 1, batch_size = 32,
-  prep_funs = NULL)
+  last_index = NULL, horizon = 1, batch_size = 1, prep_funs = NULL)
 }
 \arguments{
 \item{data}{A \code{data.frame} or \code{matrix} containing
