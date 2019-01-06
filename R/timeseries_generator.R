@@ -91,7 +91,7 @@ series_generator <- function(
 
     # preprocess the batch
     if (!is.null(prep_funs)) batch <- prep_funs(batch)
-    if (is(batch, "data.frame")) batch <- data.matrix(batch)
+    if (inherits(batch, "data.frame")) batch <- data.matrix(batch)
 
     # create container arrays
     x_array <- array(0, dim = c(n_sample, timesteps, n_col_x))
@@ -154,27 +154,32 @@ forecast_generator <- function(
     stop("'data' must be an object of 'data.frame' or 'matrix'")
   
   # sample index
-  if (is.null(end_index)) end_index <- nrow(data)
-  start_index <- end_index - horizon + 1
+  if (is.null(last_index)) last_index <- nrow(data)
+  last_index <- last_index - lookback
+  first_index <- last_index - horizon + 1
 
   # set some global params
   n_col_x <- length(x)
 
   # start iterator
-  i <- start_index
+  i <- first_index
 
   # return an iterator
   function() {
 
     # stop iterator if already seen all data
-    if ((i + batch_size - 1) > end_index) {
+    if ((i + batch_size - 1) > last_index) {
       
-      i <<- start_index
+      # give warning message
+      message("The generator has seen all data, resetting to first batch.")
+      
+      # reset the iterator
+      i <<- first_index
       
     }
 
     # iterate current batch's target rows
-    x_rows <- c(i:min(i + batch_size - 1, end_index))
+    x_rows <- c(i:min(i + batch_size - 1, last_index))
     
     # update to next iteration
     i <<- i + batch_size
@@ -194,7 +199,7 @@ forecast_generator <- function(
 
     # preprocess the batch
     if (!is.null(prep_funs)) batch <- prep_funs(batch)
-    if (is(batch, "data.frame")) batch <- data.matrix(batch)
+    if (inherits(batch, "data.frame")) batch <- data.matrix(batch)
 
     # # create container array
     x_array <- array(0, dim = c(n_sample, timesteps, n_col_x))
