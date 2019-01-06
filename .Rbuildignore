@@ -8,5 +8,5 @@
 
 ^docs$
 
-^update_progress\.Rmd$
-^update_site\.Rmd$
+^update_progress\.sh$
+^update_site\.sh$
