@@ -143,8 +143,8 @@ series_generator <- function(
 # time series forecast generator
 forecast_generator <- function(
 
-  data, x, timesteps = 1,
-  start_index = NULL, end_index = NULL,
+  data, x, lookback = 1, timesteps = 1,
+  last_index = NULL, horizon = 1,
   batch_size = 32, prep_funs = NULL
 
   ) {
@@ -153,9 +153,9 @@ forecast_generator <- function(
   if (!inherits(data, c("data.frame", "matrix")))
     stop("'data' must be an object of 'data.frame' or 'matrix'")
   
-  # check start & end index
-  if (is.null(start_index)) start_index <- 1
+  # sample index
   if (is.null(end_index)) end_index <- nrow(data)
+  start_index <- end_index - horizon + 1
 
   # set some global params
   n_col_x <- length(x)
@@ -166,8 +166,12 @@ forecast_generator <- function(
   # return an iterator
   function() {
 
-    # reset iterator if already seen all data
-    if ((i + batch_size - 1) > end_index) i <<- start_index
+    # stop iterator if already seen all data
+    if ((i + batch_size - 1) > end_index) {
+      
+      i <<- start_index
+      
+    }
 
     # iterate current batch's target rows
     x_rows <- c(i:min(i + batch_size - 1, end_index))
