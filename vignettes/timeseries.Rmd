@@ -9,7 +9,7 @@ output:
   rmarkdown::html_vignette:
     fig_caption: yes
 vignette: >
-  %\VignetteIndexEntry{Data Generator for Time Series Model}
+  %\VignetteIndexEntry{Data Generator for Time Series Models}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -26,44 +26,50 @@ knitr::opts_chunk$set(
 
 ```
 
+# Preface {#preface}
+
 Preparing a proper dataset for a supervised time series model in R sometimes could become very complex and tedious. There are some tutorials that already cover this kind of task: check out the tutorial made by [Dancho and Keydana](https://blogs.rstudio.com/tensorflow/posts/2018-06-25-sunspots-lstm/) [-@dancho2018predicting] for basic univariate model fitting without using data generator, and the one made by [Chollet and Allaire](https://blogs.rstudio.com/tensorflow/posts/2017-12-20-time-series-forecasting-with-recurrent-neural-networks/) [-@chollet2017time] for the multivariate model with a custom data generator. However, as you could see from the articles, there are no general framework on how to properly do the data preparation process.
 
 In this article we will show you how `kerasgenerator` could help us in preparing a data generator for supervised time series [`keras`](https://keras.rstudio.com) models.
 
 # Understanding the Time Series Array Shape {#introduction}
 
-To fit a supervised time series model, many of `keras`' functions expect the target and feature data to be in an `array` object with a specific number of dimension. The input and output `array` need to have at least three dimension that representing:
+To fit a supervised time series model, many of `keras`' functions expect the target and feature data to be in an `array` object with a specific number of dimension. The input `array` need to have three dimension that represent:
 
-1. Observation index
+1. Sample index
 2. Number of timesteps
-3. Number of distinct feature / target
+3. Number of distinct feature
 
-To understand better what each dimensions representing, let's follow a quick example using the popular [Internet Traffic Data from 11 European Cities](https://datamarket.com/data/set/232n/internet-traffic-data-in-bits-from-a-private-isp-with-centres-in-11-european-cities-the-data-corresponds-to-a-transatlantic-link-and-was-collected-from-0657-hours-on-7-june-to-1117-hours-on-31-july-2005-data-collected-at-five-minute-intervals#!ds=232n&display=line) dataset, provided by Time Series Data Library [@hyndman@2019time]:
+while the output `array` need to have two dimension that represent:
+
+1. Sample index
+3. Number of distinct target
+
+To understand better what each dimensions representing, let's follow a quick example using the popular [Internet Traffic Data from 11 European Cities](https://datamarket.com/data/set/232n/internet-traffic-data-in-bits-from-a-private-isp-with-centres-in-11-european-cities-the-data-corresponds-to-a-transatlantic-link-and-was-collected-from-0657-hours-on-7-june-to-1117-hours-on-31-july-2005-data-collected-at-five-minute-intervals#!ds=232n&display=line) dataset, provided by Time Series Data Library [@hyndman2019time]. We can download the datasets using `rdatamarket` package:
 
 ```{r}
 
 # import libs
-library(magrittr)
+library(rdatamarket)
 library(tidyverse)
+library(lubridate)
 
 # import dataset
-traffic_tbl <- read_csv(
-  file = "data/internet-traffic-data-in-bits-fr.csv",
-  col_names = c("datetime", "traffic"),
-  skip = 1
-)
+traffic_tbl <- dmlist("http://bit.ly/1W1mCQ3")
 
-# delete last row which contain NA
-traffic_tbl %<>% slice(-nrow(.))
+# readjust datetime
+traffic_tbl <- traffic_tbl %>%
+  select(datetime = DateTime, traffic = Value) %>%
+  mutate(datetime = ymd_hms(datetime))
 
 # quick check
 glimpse(traffic_tbl)
 
 ```
 
-The dataset is in a general time series format--it contains a time identifier column, each row representing a timestep, and it is regularly ordered. Let's see the time series pattern for the last 7 days in the data:
+The dataset is in a general time series format--it contains a time identifier column, each row representing a data within 5-minutes interval, and it is already regularly ordered. This dataset shows a very interesting time series patterns:
 
-```{r}
+```{r, echo=FALSE, fig.cap="The Internet Traffic dataset"}
 
 # import libs
 library(scales)
@@ -71,41 +77,53 @@ library(tidyquant)
 
 # plot the last 7 days
 traffic_tbl %>%
-  tail(12 * 24 * 7) %>%
   ggplot(aes(x = datetime, y = traffic)) +
     geom_line() +
     labs(x = NULL, y = NULL) +
     scale_x_datetime(label = date_format("%a, %b %e, %H:%M:%S")) +
     scale_y_continuous(
       label = unit_format(unit = "M", scale = 1e-09, accuracy = 0.01)
-    ) +
-    theme_tq()
+    )
 
 ```
 
-In supervised time series model, we need to define two important parameters for our datasets. The first parameter is the **lookback period**. The lookback period is determining **how many period behind should the targets look-up for its signal**, but it should be noted that **the periods in-between will be skipped**. The second parameter is the **timestep length**. This parameter define **the length of an observation of features** that would be considered as a sequence of signal for the target. **Note** that the terms that I just mentioned might be differ from other source, but I really suggest you to read the original paper of [Long Short-Term Memory](https://www.bioinf.jku.at/publications/older/2604.pdf) layer [@hochreiter1997long] and other valid sources to reach a better understanding of the terminologies.
+In supervised time series model, we need to define two important parameters for our datasets:
 
-Now let's make some illustration using our dataset to make it clear. Supposed that we want to predict the value of 5-minutes total traffic using the traffic pattern in the previous hour. If, we pick the last observation of our dataset as our target, then the target and features will be:
+lookback period
+  : The lookback period is determining **how many period behind should the targets lookup for its signal**, but it should be noted that **the periods in-between will be ignored**. For example, for target $y_t$ and $l$ lookback, then the target will lookup for feature $x_{t-l}$.
+timestep length
+  : This parameter define **the length of a sample of feature** that would be considered as a sequence of signal for the target. For example, for feature $x_t$ and $ts$ timesteps length, then the target will lookup for feature $x_t, x_{t-l}, x_{t-2}, ..., x_{t-ts+1}$.
+
+**Note** that the terms that I just mentioned might be differ from other source. While all the version reach to a same understanding, I really suggest you to read the original paper of [Long Short-Term Memory](https://www.bioinf.jku.at/publications/older/2604.pdf) layer [@hochreiter1997long] and other valid resources to reach a better understanding of the terminologies.
+
+Now let's make some illustration using our dataset to make it clear. Supposed that we want to predict the value of 5-minutes total traffic using the hourly pattern in the same minute of previous hour. Say, we pick the last observation of our dataset as our target then the index for our target and its feature will be:
 
 ```{r}
-
-# import libs
-library(lubridate)
 
 # set some parameters
 lookback <- 12
 timesteps <- 12
 
 # specify the target and feature
-target <- tail(traffic_tbl$datetime, 1)
-feature_end <- target - 5 * minutes(lookback)
-feature_start <- feature_end - 5 * minutes(timesteps) + minutes(5)
+target <- nrow(traffic_tbl)
+feature_end <- target - lookback
+feature_start <- feature_end - timesteps + 1
+
+# check the values
+paste("Target:", traffic_tbl$datetime[target])
+paste("Feature start:", traffic_tbl$datetime[feature_start])
+paste("Feature end:", traffic_tbl$datetime[feature_end])
 
 ```
 
-Notice that I set the `feature_start` to be `feature_end - timesteps + 1`--the `+ 1` is represented by `minutes(5)` in this case. This is because the `timesteps` value is representing how long is our feature--without `+ 1`, the timesteps would be longer by 1 value. See the following figure for an illustration:
+Notice that I set the `feature_start` to be `feature_end - timesteps + 1. This is because the `timesteps` value is representing the length of a feature--if we don't add `+ 1`, the timesteps would be longer by 1 value. See the following figure for an illustration:
 
 ```{r, echo=FALSE, fig.cap="Supervised time series model illustration"}
+
+# convert to date
+target_date <- traffic_tbl$datetime[target]
+start_date <- traffic_tbl$datetime[feature_start]
+end_date <- traffic_tbl$datetime[feature_end]
 
 # illustration
 traffic_tbl %>%
@@ -114,41 +132,41 @@ traffic_tbl %>%
     geom_line() +
     geom_point(
       data = traffic_tbl %>%
-        filter(datetime %in% c(feature_start, feature_end, target)) %>%
+        filter(datetime %in% c(start_date, end_date, target_date)) %>%
         mutate(id = c("Feature", "Feature", "Target")),
       aes(x = datetime, y = traffic, colour = id)
     ) +
     annotate(
       geom = "text",
-      x = target,
-      y = 7.10 * 1e+09,
+      x = target_date,
+      y = 6.95 * 1e+09,
       label = "Target",
       colour = "darkred",
       angle = 90
     ) +
     annotate(
       geom = "segment",
-      x = target,
-      xend = target,
-      y = 7 * 1e+09,
+      x = target_date,
+      xend = target_date,
+      y = 6.9 * 1e+09,
       yend = 6.75 * 1e+09,
       colour = "darkred",
       arrow = arrow(length = unit(0.25, "cm"))
     ) +
     annotate(
       geom = "text",
-      x = feature_start + difftime(feature_end, feature_start) / 2,
-      y = 7.10 * 1e+09,
+      x = start_date + difftime(end_date, start_date) / 2,
+      y = 6.95 * 1e+09,
       label = glue::glue(
-        "A sequence feature", "\n",
+        "A sequence-feature", "\n",
         "with {timesteps} timesteps"
       ),
       colour = "darkblue"
     ) +
     annotate(
       geom = "rect",
-      xmin = feature_start,
-      xmax = feature_end,
+      xmin = start_date,
+      xmax = end_date,
       ymin = -Inf,
       ymax = Inf,
       alpha = 0.1,
@@ -168,7 +186,7 @@ traffic_tbl %>%
 
 ```
 
-If we follow this format, then we could convert the data into `array` matrices like this:
+If we follow this format, then we could convert the data into a proper `array` matrices like this:
 
 ```{r}
 
@@ -177,7 +195,7 @@ x_array <- array(0, dim = c(1, timesteps, 1))
 y_array <- array(0, dim = c(1, 1))
 
 # specify the row indices
-y_row <- nrow(traffic_tbl)
+y_row <- target
 x_row <- y_row - lookback
 
 # adjust the x indices according to the timesteps
@@ -205,17 +223,15 @@ str(y_array)
 
 ```
 
-Basically, the [`series_generator()`](/reference/series_generator) function is transforming your data into the format similar to above explanation; [`forecast_generator()`]((/reference/forecast_generator)) also works in a similar way, but disregards any attributes related to `y` (see [forecasting section](#forecast) for further explanation). Let's take a look on how those functions in action in the following sections.
+Basically, the [`series_generator()`](/reference/series_generator) function is transforming your data into the same format as in above explanations; [`forecast_generator()`]((/reference/forecast_generator)) also works in a similar way, but have a different point of view (see [forecasting section](#forecast) for further explanation). Let's take a look on how those functions in action in the following sections.
 
-# Fitting a Time Series Model using Data Generator {#fitting}
+# Fitting a Time Series Model {#fitting}
 
-In this example, we will continue using the Internet Traffic dataset to fit a time series Keras model using `kerasgenerator`.
-
-To build a time series data generator, we need to specify some parameters:
+To build a time series data generator, we need to specify some parameters related to our model. Let's start by the supervised time series model specifications. In addition to `lookback` and `timesteps`, we also need to specify the `x` and `y` variables, which in this case are both `"traffic"` variable:
 
 ```{r}
 
-# the x and y index
+# the x and y
 x <- "traffic"
 y <- "traffic"
 
@@ -223,25 +239,52 @@ y <- "traffic"
 lookback <- 12
 timesteps <- 12
 
-# dataset settings
-train_length <- 12 * 24 * 7
-val_length <- 12 * 24
-batch_size <- 12 * 24
+```
 
-# train-val row indices
-val_end <- nrow(traffic_tbl)
-val_start <- val_end - val_length + 1
+Another parameters that neet to be set are related to our cross-validation settings. In order to split the dataset into train, validation, and test dataset, the `series_generator()` need to know the `start_index` and `end_index`. First, let's start by defining each sample sizes:
 
-train_end <- val_start - 1
-train_start <- train_end - train_length + 1
+```{r}
 
-# number of steps to see full data
-train_steps <- ceiling(train_length / batch_size)
-val_steps <- ceiling(val_length / batch_size)
+# number of train-val-test sample
+train_size <- 12 * 24 * 7 * 4
+val_size <- 12 * 24 * 7
+test_size <- 12 * 24 * 7
 
 ```
 
-Before we continue, let's define a custom function for data preprocessing on the fly. We will use [`recipes`](https://tidymodels.github.io/recipes/) functionality within our custom function:
+Then we can specify the sample indices according to its size. Note that you can choose to sample the row indices, but I really suggest to follow the best practice by splitting the samples according to its time order:
+
+```{r}
+
+# train-val row indices
+test_end <- nrow(traffic_tbl)
+test_start <- test_end - test_size + 1
+
+val_end <- test_start - 1
+val_start <- val_end - val_size + 1
+
+train_end <- val_start - 1
+train_start <- train_end - train_size + 1
+
+```
+
+The last but not least, we need to specify the `batch_size` and the number of `steps` in order to see the full data for each sample:
+
+```{r}
+
+# batch size
+batch_size <- 12 * 24
+
+# number of steps to see full data
+train_steps <- ceiling(train_size / batch_size)
+val_steps <- ceiling(val_size / batch_size)
+test_steps <- ceiling(test_size / batch_size)
+
+```
+
+**Note** that I wrap the `size / batch_size` with `ceiling` function. This is necessary to ensure that Keras' generator function will see all observation.
+
+Before we define the data generators, let's define a custom function for data preprocessing on the fly using [`recipes`](https://tidymodels.github.io/recipes/) functions:
 
 ```{r}
 
@@ -306,7 +349,7 @@ val_gen <- series_generator(
 
 ```
 
-Now we can proceed to define our time series Keras model:
+Let's see how the generators work with Keras' model. First, let's define our time series Keras model:
 
 ```{r}
 
@@ -325,7 +368,7 @@ model %>%
     input_shape = list(timesteps, length(x)),
     units = 128,
     dropout = 0.1,
-    recurrent_dropout = 0.1,
+    recurrent_dropout = 0.2,
     return_sequences = TRUE
   ) %>%
   
@@ -333,7 +376,7 @@ model %>%
     name = "lstm2",
     units = 64,
     dropout = 0.1,
-    recurrent_dropout = 0.1,
+    recurrent_dropout = 0.2,
     return_sequences = TRUE
   ) %>%
   
@@ -341,7 +384,7 @@ model %>%
     name = "lstm3",
     units = 32,
     dropout = 0.1,
-    recurrent_dropout = 0.1,
+    recurrent_dropout = 0.2,
     return_sequences = FALSE
   ) %>%
   
@@ -362,12 +405,12 @@ summary(model)
 
 ```
 
-To fit this model, we will use [`fit_generator()`]((https://keras.rstudio.com/reference/fit_generator.html)) function:
+Since we use a data generator, use [`fit_generator()`]((https://keras.rstudio.com/reference/fit_generator.html)) function to fit the model:
 
 ```{r}
 
 # set number of epochs
-epochs <- 100
+epochs <- 30
 
 # model fitting
 history <- model %>% fit_generator(
@@ -383,14 +426,28 @@ plot(history)
 
 ```
 
-You can also pass the generator to [`evaluate_generator()`]((https://keras.rstudio.com/reference/evaluate_generator.html)) to evaluate the results:
+You can also pass the generator to [`evaluate_generator()`]((https://keras.rstudio.com/reference/evaluate_generator.html)) to evaluate the results. Let's try to evaluate on the test dataset:
 
 ```{r}
 
-# evaluate on validation dataset
+# test data generator
+test_gen <- series_generator(
+  data = traffic_tbl,
+  y = y,
+  x = x,
+  lookback = lookback,
+  timesteps = timesteps,
+  start_index = test_start,
+  end_index = test_end,
+  batch_size = batch_size,
+  return_target = TRUE,
+  prep_funs = prep_funs
+)
+
+# evaluate on test dataset
 model %>% evaluate_generator(
-  generator = val_gen,
-  steps = val_steps
+  generator = test_gen,
+  steps = test_steps
 )
 
 ```
@@ -412,7 +469,7 @@ fcast_steps <- ceiling(horizon / batch_size)
 
 ```
 
-Note that the **forecast `horizon` should not be greater than the value of `lookback` if you want to forecast from the last observation**.
+**Note that the forecast `horizon` should not be greater than the value of `lookback` if you want to forecast from the last observation**.
 
 Then, we can proceed to define the generator and pass it to [`predict_generator()`]((https://keras.rstudio.com/reference/predict_generator.html)) function:
 

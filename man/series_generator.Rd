@@ -35,7 +35,7 @@ that would be included as a sample.}
 \item{batch_size}{A \code{numeric} vector which identify
 how many observation is considered as a batch.}
 
-\item{return_target}{A \code{boolean} indicating if the generator.
+\item{return_target}{A \code{logical} indicating if the generator.
 should return the target or not.}
 
 \item{prep_funs}{A custom function for preprocess the \code{data}
