@@ -7,6 +7,4 @@
 ^\.gitignore$
 
 ^docs$
-
-^update_progress\.sh$
-^update_site\.sh$
+^script$
