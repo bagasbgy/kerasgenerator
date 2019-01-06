@@ -26,7 +26,7 @@
 #'  that would be included as a sample.
 #' @param batch_size A \code{numeric} vector which identify
 #'  how many observation is considered as a batch.
-#' @param return_target A \code{boolean} indicating if the generator.
+#' @param return_target A \code{logical} indicating if the generator.
 #'  should return the target or not.
 #' @param prep_funs A custom function for preprocess the \code{data}
 #'  on the fly, optional.
@@ -134,6 +134,9 @@ series_generator <- function(
 #' @family time series generators
 #'
 #' @inheritParams series_generator
+#'
+#' @param last_index A \code{numeric} value indicating the last sample index.
+#' @param horizon A \code{numeric} indicating the number of forecast horizon.
 #'
 #' @return The generator will returning an object of \code{list} containing
 #'  a batch of \code{x_array}.

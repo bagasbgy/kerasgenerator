@@ -1,10 +1,13 @@
-^README\.Rmd$
-
-^kerasgenerator\.Rproj$
+^.*\.Rproj$
 ^\.Rproj\.user$
-
 ^\.git$
 ^\.gitignore$
 
+^README\.Rmd$
+^LICENSE\.md$
+
 ^docs$
+^pkgdown$
+^vignettes$
+
 ^script$

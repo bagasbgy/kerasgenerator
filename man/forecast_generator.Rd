@@ -20,6 +20,10 @@ the number of lookback period.}
 \item{timesteps}{A \code{numeric} vector which identify
 the number of timesteps length.}
 
+\item{last_index}{A \code{numeric} value indicating the last sample index.}
+
+\item{horizon}{A \code{numeric} indicating the number of forecast horizon.}
+
 \item{batch_size}{A \code{numeric} vector which identify
 how many observation is considered as a batch.}
 
