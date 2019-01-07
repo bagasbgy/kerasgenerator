@@ -20,24 +20,23 @@ lookback <- 10
 timesteps <- 10
 
 # dataset settings
-train_length <- 40
-val_length <- 20
-batch_size <- 20
+train_size <- 40
+val_size <- 20
 
 # forecast settings
-horizon <- val_length
 
 # train-val row indices
 val_end <- nrow(data)
-val_start <- val_end - val_length + 1
+val_start <- val_end - val_size + 1
 
 train_end <- val_start - 1
-train_start <- train_end - train_length + 1
+train_start <- train_end - train_size + 1
 
 # number of steps to see full data
-train_steps <- train_length / batch_size
-val_steps <- val_length / batch_size
-fcast_steps <- horizon / batch_size
+batch_size <- 20
+
+train_steps <- ceiling(train_size / batch_size)
+val_steps <- ceiling(val_size / batch_size)
 
 # test: equal
 #--------------------
@@ -91,7 +90,7 @@ test_that("output is identical to original data", {
 # test: passing to keras
 #--------------------
 
-# load libs
+# import libs
 library(keras)
 
 # sample generators
@@ -105,28 +104,6 @@ train_gen <- series_generator(
   end_index = train_end,
   batch_size = batch_size,
   return_target = TRUE
-)
-
-train_pred_gen <- series_generator(
-  data = data,
-  x = x,
-  y = y,
-  lookback = lookback,
-  timesteps = timesteps,
-  start_index = train_start,
-  end_index = train_end,
-  batch_size = batch_size,
-  return_target = FALSE
-)
-
-train_fcast_gen <- forecast_generator(
-  data = data,
-  x = x,
-  lookback = lookback,
-  timesteps = timesteps,
-  last_index = train_end,
-  horizon = horizon,
-  batch_size = batch_size
 )
 
 val_gen <- series_generator(
@@ -153,6 +130,7 @@ val_pred_gen <- series_generator(
   return_target = FALSE
 )
 
+
 # sample model
 model <- keras_model_sequential() %>%
   layer_lstm(units = 8, input_shape = list(timesteps, length(x))) %>%
@@ -160,7 +138,7 @@ model <- keras_model_sequential() %>%
 
 model %>% compile(
   optimizer = "rmsprop",
-  loss = "mse",
+  loss = "mse"
 )
 
 # test if could be used
@@ -180,16 +158,16 @@ test_that("generators could be used for fit, evaluate, and predict", {
     # test on evaluate
     expect_silent(
       model %>% evaluate_generator(
-        generator = train_gen,
-        steps = train_steps
+        generator = val_gen,
+        steps = val_steps
       )
     )
   
     # test on predict
     expect_silent(
       model %>% predict_generator(
-        generator = train_pred_gen,
-        steps = train_steps
+        generator = val_pred_gen,
+        steps = val_steps
       )
     )
     
@@ -197,25 +175,54 @@ test_that("generators could be used for fit, evaluate, and predict", {
   
 )
 
-# forecast and predict on validation
-val_fcast <- model %>% predict_generator(
-  generator = train_fcast_gen,
+# test: forecast generators
+#--------------------
+
+# forecast settings
+horizon <- val_size
+fcast_steps <- ceiling(horizon / batch_size)
+
+# forecast to validation sample
+fcast_gen <- forecast_generator(
+  data = data,
+  x = x,
+  lookback = lookback,
+  timesteps = timesteps,
+  last_index = train_end,
+  horizon = horizon,
+  batch_size = batch_size
+)
+
+fcast <- model %>% predict_generator(
+  generator = fcast_gen,
   steps = fcast_steps
 )
+
+# predict on validation
+val_pred_gen <- series_generator(
+  data = data,
+  x = x,
+  y = y,
+  lookback = lookback,
+  timesteps = timesteps,
+  start_index = val_start,
+  end_index = val_end,
+  batch_size = batch_size,
+  return_target = FALSE
+)
+
 val_pred <- model %>% predict_generator(
   generator = val_pred_gen,
   steps = val_steps
 )
 
 # test forecast output
-test_that("output from forecast on generator is as expected", {
+test_that("output from forecast equivalent to prediction", {
 
     # test if output is identical to reference
-    expect_equal(dim(val_fcast), dim(val_pred))
-    expect_equal(val_fcast, val_pred)
+    expect_equal(dim(fcast), dim(val_pred))
+    expect_equal(fcast, val_pred)
     
   }
   
 )
-
-#

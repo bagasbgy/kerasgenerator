@@ -6,7 +6,6 @@ rm(list = ls())
 
 # load libs
 library(testthat)
-library(keras)
 library(kerasgenerator)
 
 # perform test

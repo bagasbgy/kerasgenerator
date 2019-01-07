@@ -4,7 +4,7 @@
 #--------------------
 
 # printf
-printf '\n\nBuilding documentation...'
+printf '\n\nUpdating docs...'
 printf '\n--------------------\n\n'
 
 # remove existing documentations
@@ -17,7 +17,7 @@ Rscript -e 'devtools::document()'
 #--------------------
 
 # printf
-printf '\n\nBuild the package...'
+printf '\n\nBuilding...'
 printf '\n--------------------\n\n'
 
 # remove existing inst/doc
@@ -30,23 +30,13 @@ Rscript -e 'devtools::build()'
 #--------------------
 
 # printf
-printf '\n\nUpdating the package installation...'
+printf '\n\nUpdating...'
 printf '\n--------------------\n\n'
 
 # install the package
 Rscript -e 'devtools::install()'
 
-# testing
-#--------------------
-
-# printf
-printf '\n\nRunning tests...'
-printf '\n--------------------\n\n'
-
-# run test
-Rscript -e 'devtools::test()'
-
-# testing
+# check
 #--------------------
 
 # printf
@@ -60,4 +50,4 @@ Rscript -e 'devtools::check()'
 #--------------------
 
 # printf
-printf '\n> Updating progress finished!\n\n'
+printf '\n> Package update finished!\n\n'

@@ -100,12 +100,8 @@
 
     
     
-<div id="preface" class="section level1">
-<h1 class="hasAnchor">
-<a href="#preface" class="anchor"></a>Preface</h1>
 <p>Preparing a proper dataset for a supervised time series model in R sometimes could become very complex and tedious. There are some tutorials that already cover this kind of task: check out the tutorial made by <a href="https://blogs.rstudio.com/tensorflow/posts/2018-06-25-sunspots-lstm/">Dancho and Keydana</a> <span class="citation">(<a href="#ref-dancho2018predicting">2018</a>)</span> for basic univariate model fitting without using data generator, and the one made by <a href="https://blogs.rstudio.com/tensorflow/posts/2017-12-20-time-series-forecasting-with-recurrent-neural-networks/">Chollet and Allaire</a> <span class="citation">(<a href="#ref-chollet2017time">2017</a>)</span> for the multivariate model with a custom data generator. However, as you could see from the articles, there are no general framework on how to properly do the data preparation process.</p>
 <p>In this article we will show you how <code>kerasgenerator</code> could help us in preparing a data generator for supervised time series <a href="https://keras.rstudio.com"><code>keras</code></a> models.</p>
-</div>
 <div id="introduction" class="section level1">
 <h1 class="hasAnchor">
 <a href="#introduction" class="anchor"></a>Understanding the Time Series Array Shape</h1>
@@ -122,20 +118,21 @@
 </ol>
 <p>To understand better what each dimensions representing, let’s follow a quick example using the popular <a href="https://datamarket.com/data/set/232n/internet-traffic-data-in-bits-from-a-private-isp-with-centres-in-11-european-cities-the-data-corresponds-to-a-transatlantic-link-and-was-collected-from-0657-hours-on-7-june-to-1117-hours-on-31-july-2005-data-collected-at-five-minute-intervals#!ds=232n&amp;display=line">Internet Traffic Data from 11 European Cities</a> dataset, provided by Time Series Data Library <span class="citation">(Hyndman, <a href="#ref-hyndman2019time">2019</a>)</span>. We can download the datasets using <code>rdatamarket</code> package:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="co"># import libs</span></a>
-<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(rdatamarket)</a>
-<a class="sourceLine" id="cb1-3" data-line-number="3"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(tidyverse)</a>
-<a class="sourceLine" id="cb1-4" data-line-number="4"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(lubridate)</a>
-<a class="sourceLine" id="cb1-5" data-line-number="5"></a>
-<a class="sourceLine" id="cb1-6" data-line-number="6"><span class="co"># import dataset</span></a>
-<a class="sourceLine" id="cb1-7" data-line-number="7">traffic_tbl &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/rdatamarket/topics/dmlist">dmlist</a></span>(<span class="st">"http://bit.ly/1W1mCQ3"</span>)</a>
-<a class="sourceLine" id="cb1-8" data-line-number="8"></a>
-<a class="sourceLine" id="cb1-9" data-line-number="9"><span class="co"># readjust datetime</span></a>
-<a class="sourceLine" id="cb1-10" data-line-number="10">traffic_tbl &lt;-<span class="st"> </span>traffic_tbl <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb1-11" data-line-number="11"><span class="st">  </span><span class="kw">select</span>(<span class="dt">datetime =</span> DateTime, <span class="dt">traffic =</span> Value) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb1-12" data-line-number="12"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">datetime =</span> <span class="kw"><a href="http://lubridate.tidyverse.org/reference/ymd_hms.html">ymd_hms</a></span>(datetime))</a>
-<a class="sourceLine" id="cb1-13" data-line-number="13"></a>
-<a class="sourceLine" id="cb1-14" data-line-number="14"><span class="co"># quick check</span></a>
-<a class="sourceLine" id="cb1-15" data-line-number="15"><span class="kw">glimpse</span>(traffic_tbl)</a></code></pre></div>
+<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(lubridate)</a>
+<a class="sourceLine" id="cb1-3" data-line-number="3"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(magrittr)</a>
+<a class="sourceLine" id="cb1-4" data-line-number="4"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(rdatamarket)</a>
+<a class="sourceLine" id="cb1-5" data-line-number="5"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(tidyverse)</a>
+<a class="sourceLine" id="cb1-6" data-line-number="6"></a>
+<a class="sourceLine" id="cb1-7" data-line-number="7"><span class="co"># import dataset</span></a>
+<a class="sourceLine" id="cb1-8" data-line-number="8">traffic_tbl &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/rdatamarket/topics/dmlist">dmlist</a></span>(<span class="st">"http://bit.ly/1W1mCQ3"</span>)</a>
+<a class="sourceLine" id="cb1-9" data-line-number="9"></a>
+<a class="sourceLine" id="cb1-10" data-line-number="10"><span class="co"># readjust datetime</span></a>
+<a class="sourceLine" id="cb1-11" data-line-number="11">traffic_tbl <span class="op">%&lt;&gt;%</span></a>
+<a class="sourceLine" id="cb1-12" data-line-number="12"><span class="st">  </span><span class="kw">select</span>(<span class="dt">datetime =</span> DateTime, <span class="dt">traffic =</span> Value) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb1-13" data-line-number="13"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">datetime =</span> <span class="kw"><a href="http://lubridate.tidyverse.org/reference/ymd_hms.html">ymd_hms</a></span>(datetime))</a>
+<a class="sourceLine" id="cb1-14" data-line-number="14"></a>
+<a class="sourceLine" id="cb1-15" data-line-number="15"><span class="co"># quick check</span></a>
+<a class="sourceLine" id="cb1-16" data-line-number="16"><span class="kw">glimpse</span>(traffic_tbl)</a></code></pre></div>
 <pre><code>## Observations: 14,772
 ## Variables: 2
 ## $ datetime &lt;dttm&gt; 2005-06-07 07:00:00, 2005-06-07 07:05:00, 2005-06-07 0…
@@ -147,13 +144,16 @@ The Internet Traffic dataset
 </p>
 </div>
 <p>In supervised time series model, we need to define two important parameters for our datasets:</p>
-<dl>
-<dt>lookback period</dt>
-<dd>The lookback period is determining <strong>how many period behind should the targets lookup for its signal</strong>, but it should be noted that <strong>the periods in-between will be ignored</strong>. For example, for target <span class="math inline">\(y_t\)</span> and <span class="math inline">\(l\)</span> lookback, then the target will lookup for feature <span class="math inline">\(x_{t-l}\)</span>. timestep length
-</dd>
-<dd>This parameter define <strong>the length of a sample of feature</strong> that would be considered as a sequence of signal for the target. For example, for feature <span class="math inline">\(x_t\)</span> and <span class="math inline">\(ts\)</span> timesteps length, then the target will lookup for feature <span class="math inline">\(x_t, x_{t-l}, x_{t-2}, ..., x_{t-ts+1}\)</span>.
-</dd>
-</dl>
+<ul>
+<li>
+<p>lookback period:</p>
+<p>The lookback period is determining <strong>how many period behind should the targets lookup for its signal</strong>, but it should be noted that <strong>the periods in-between will be ignored</strong>. For example, for target <span class="math inline">\(y_t\)</span> and <span class="math inline">\(l\)</span> lookback, then the target will lookup for feature <span class="math inline">\(x_{t-l}\)</span>.</p>
+</li>
+<li>
+<p>timestep length:</p>
+<p>This parameter define <strong>the length of a sample of feature</strong> that would be considered as a sequence of signal for the target. For example, for feature <span class="math inline">\(x_t\)</span> and <span class="math inline">\(ts\)</span> timesteps length, then the target will lookup for feature <span class="math inline">\(x_t, x_{t-l}, x_{t-2}, ..., x_{t-ts+1}\)</span>.</p>
+</li>
+</ul>
 <p><strong>Note</strong> that the terms that I just mentioned might be differ from other source. While all the version reach to a same understanding, I really suggest you to read the original paper of <a href="https://www.bioinf.jku.at/publications/older/2604.pdf">Long Short-Term Memory</a> layer <span class="citation">(Hochreiter &amp; Schmidhuber, <a href="#ref-hochreiter1997long">1997</a>)</span> and other valid resources to reach a better understanding of the terminologies.</p>
 <p>Now let’s make some illustration using our dataset to make it clear. Supposed that we want to predict the value of 5-minutes total traffic using the hourly pattern in the same minute of previous hour. Say, we pick the last observation of our dataset as our target then the index for our target and its feature will be:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="co"># set some parameters</span></a>
@@ -172,7 +172,7 @@ The Internet Traffic dataset
 <pre><code>## [1] "Feature start: 2005-07-28 12:00:00"</code></pre>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste</a></span>(<span class="st">"Feature end:"</span>, traffic_tbl<span class="op">$</span>datetime[feature_end])</a></code></pre></div>
 <pre><code>## [1] "Feature end: 2005-07-28 12:55:00"</code></pre>
-<p>Notice that I set the <code>feature_start</code> to be <code>feature_end - timesteps + 1. This is because the</code>timesteps<code>value is representing the length of a feature--if we don't add</code>+ 1`, the timesteps would be longer by 1 value. See the following figure for an illustration:</p>
+<p>Notice that I set the <code>feature_start</code> to be <code>feature_end - timesteps + 1</code>. This is because the <code>timesteps</code> value is representing the length of a feature–if we don’t add <code>+ 1</code>, the timesteps would be longer by 1 value. See the following figure for an illustration:</p>
 <div class="figure" style="text-align: center">
 <img src="timeseries_files/figure-html/unnamed-chunk-4-1.png" alt="Supervised time series model illustration" width="100%"><p class="caption">
 Supervised time series model illustration
@@ -188,17 +188,14 @@ Supervised time series model illustration
 <a class="sourceLine" id="cb9-7" data-line-number="7">x_row &lt;-<span class="st"> </span>y_row <span class="op">-</span><span class="st"> </span>lookback</a>
 <a class="sourceLine" id="cb9-8" data-line-number="8"></a>
 <a class="sourceLine" id="cb9-9" data-line-number="9"><span class="co"># adjust the x indices according to the timesteps</span></a>
-<a class="sourceLine" id="cb9-10" data-line-number="10">x_indices &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/seq">seq</a></span>(</a>
-<a class="sourceLine" id="cb9-11" data-line-number="11">  <span class="dt">from =</span> x_row <span class="op">-</span><span class="st"> </span>timesteps <span class="op">+</span><span class="st"> </span><span class="dv">1</span>,</a>
-<a class="sourceLine" id="cb9-12" data-line-number="12">  <span class="dt">to =</span> x_row</a>
-<a class="sourceLine" id="cb9-13" data-line-number="13">)</a>
+<a class="sourceLine" id="cb9-10" data-line-number="10">x_indices &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/seq">seq</a></span>(x_row <span class="op">-</span><span class="st"> </span>timesteps <span class="op">+</span><span class="st"> </span><span class="dv">1</span>, x_row)</a>
+<a class="sourceLine" id="cb9-11" data-line-number="11"></a>
+<a class="sourceLine" id="cb9-12" data-line-number="12"><span class="co"># convert the table into matrix</span></a>
+<a class="sourceLine" id="cb9-13" data-line-number="13">traffic_matrix &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/data.matrix">data.matrix</a></span>(traffic_tbl)</a>
 <a class="sourceLine" id="cb9-14" data-line-number="14"></a>
-<a class="sourceLine" id="cb9-15" data-line-number="15"><span class="co"># convert the table into matrix</span></a>
-<a class="sourceLine" id="cb9-16" data-line-number="16">traffic_matrix &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/data.matrix">data.matrix</a></span>(traffic_tbl)</a>
-<a class="sourceLine" id="cb9-17" data-line-number="17"></a>
-<a class="sourceLine" id="cb9-18" data-line-number="18"><span class="co"># fill the arrays</span></a>
-<a class="sourceLine" id="cb9-19" data-line-number="19">x_array[<span class="dv">1</span>, , <span class="dv">1</span>] &lt;-<span class="st"> </span>traffic_matrix[x_indices, <span class="dv">2</span>]</a>
-<a class="sourceLine" id="cb9-20" data-line-number="20">y_array[<span class="dv">1</span>, <span class="dv">1</span>] &lt;-<span class="st"> </span>traffic_matrix[y_row, <span class="dv">2</span>]</a></code></pre></div>
+<a class="sourceLine" id="cb9-15" data-line-number="15"><span class="co"># fill the arrays</span></a>
+<a class="sourceLine" id="cb9-16" data-line-number="16">x_array[<span class="dv">1</span>, , <span class="dv">1</span>] &lt;-<span class="st"> </span>traffic_matrix[x_indices, <span class="dv">2</span>]</a>
+<a class="sourceLine" id="cb9-17" data-line-number="17">y_array[<span class="dv">1</span>, <span class="dv">1</span>] &lt;-<span class="st"> </span>traffic_matrix[y_row, <span class="dv">2</span>]</a></code></pre></div>
 <p>Let’s confirm the structure and content inside the arrays:</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" data-line-number="1"><span class="co"># check the structure</span></a>
 <a class="sourceLine" id="cb10-2" data-line-number="2"><span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/str">str</a></span>(x_array)</a></code></pre></div>
@@ -261,10 +258,11 @@ Supervised time series model illustration
 <a class="sourceLine" id="cb18-16" data-line-number="16">    <span class="dt">object =</span> recipe_obj,</a>
 <a class="sourceLine" id="cb18-17" data-line-number="17">    <span class="dt">new_data =</span> data</a>
 <a class="sourceLine" id="cb18-18" data-line-number="18">  )</a>
-<a class="sourceLine" id="cb18-19" data-line-number="19">  <span class="co"># return the data</span></a>
-<a class="sourceLine" id="cb18-20" data-line-number="20">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(newdata)</a>
-<a class="sourceLine" id="cb18-21" data-line-number="21">  </a>
-<a class="sourceLine" id="cb18-22" data-line-number="22">}</a></code></pre></div>
+<a class="sourceLine" id="cb18-19" data-line-number="19">  </a>
+<a class="sourceLine" id="cb18-20" data-line-number="20">  <span class="co"># return the processed data</span></a>
+<a class="sourceLine" id="cb18-21" data-line-number="21">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(newdata)</a>
+<a class="sourceLine" id="cb18-22" data-line-number="22">  </a>
+<a class="sourceLine" id="cb18-23" data-line-number="23">}</a></code></pre></div>
 <p>Finally, we could start to make generators for the train and validation data:</p>
 <div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" data-line-number="1"><span class="co"># import libs</span></a>
 <a class="sourceLine" id="cb19-2" data-line-number="2"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(kerasgenerator)</a>
@@ -368,9 +366,9 @@ Supervised time series model illustration
 <a class="sourceLine" id="cb22-5" data-line-number="5">history &lt;-<span class="st"> </span>model <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/keras/topics/fit_generator">fit_generator</a></span>(</a>
 <a class="sourceLine" id="cb22-6" data-line-number="6">  <span class="dt">generator =</span> train_gen,</a>
 <a class="sourceLine" id="cb22-7" data-line-number="7">  <span class="dt">steps_per_epoch =</span> train_steps,</a>
-<a class="sourceLine" id="cb22-8" data-line-number="8">  <span class="dt">epochs =</span> epochs,</a>
-<a class="sourceLine" id="cb22-9" data-line-number="9">  <span class="dt">validation_data =</span> val_gen,</a>
-<a class="sourceLine" id="cb22-10" data-line-number="10">  <span class="dt">validation_steps =</span> val_steps</a>
+<a class="sourceLine" id="cb22-8" data-line-number="8">  <span class="dt">validation_data =</span> val_gen,</a>
+<a class="sourceLine" id="cb22-9" data-line-number="9">  <span class="dt">validation_steps =</span> val_steps,</a>
+<a class="sourceLine" id="cb22-10" data-line-number="10">  <span class="dt">epochs =</span> epochs</a>
 <a class="sourceLine" id="cb22-11" data-line-number="11">)</a>
 <a class="sourceLine" id="cb22-12" data-line-number="12"></a>
 <a class="sourceLine" id="cb22-13" data-line-number="13"><span class="co"># history plot</span></a>
@@ -397,7 +395,7 @@ Supervised time series model illustration
 <a class="sourceLine" id="cb23-18" data-line-number="18">  <span class="dt">steps =</span> test_steps</a>
 <a class="sourceLine" id="cb23-19" data-line-number="19">)</a></code></pre></div>
 <pre><code>##       loss 
-## 0.04740722</code></pre>
+## 0.04472111</code></pre>
 </div>
 <div id="forecast" class="section level1">
 <h1 class="hasAnchor">
@@ -412,7 +410,7 @@ Supervised time series model illustration
 <a class="sourceLine" id="cb25-7" data-line-number="7"><span class="co"># number of steps to see full data</span></a>
 <a class="sourceLine" id="cb25-8" data-line-number="8">fcast_steps &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Round">ceiling</a></span>(horizon <span class="op">/</span><span class="st"> </span>batch_size)</a></code></pre></div>
 <p><strong>Note that the forecast <code>horizon</code> should not be greater than the value of <code>lookback</code> if you want to forecast from the last observation</strong>.</p>
-<p>Then, we can proceed to define the generator and pass it to <a href="(https://keras.rstudio.com/reference/predict_generator.html)"><code><a href="https://www.rdocumentation.org/packages/keras/topics/predict_generator">predict_generator()</a></code></a> function:</p>
+<p>Then, we can proceed to define the generator for forecasting and pass it to <a href="(https://keras.rstudio.com/reference/predict_generator.html)"><code><a href="https://www.rdocumentation.org/packages/keras/topics/predict_generator">predict_generator()</a></code></a> function.</p>
 <div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb26-1" data-line-number="1"><span class="co"># forecast generator</span></a>
 <a class="sourceLine" id="cb26-2" data-line-number="2">fcast_gen &lt;-<span class="st"> </span><span class="kw"><a href="../reference/forecast_generator.html">forecast_generator</a></span>(</a>
 <a class="sourceLine" id="cb26-3" data-line-number="3">  <span class="dt">data =</span> traffic_tbl,</a>
@@ -421,18 +419,50 @@ Supervised time series model illustration
 <a class="sourceLine" id="cb26-6" data-line-number="6">  <span class="dt">timesteps =</span> timesteps,</a>
 <a class="sourceLine" id="cb26-7" data-line-number="7">  <span class="dt">last_index =</span> last_index,</a>
 <a class="sourceLine" id="cb26-8" data-line-number="8">  <span class="dt">horizon =</span> horizon,</a>
-<a class="sourceLine" id="cb26-9" data-line-number="9">  <span class="dt">batch_size =</span> batch_size</a>
-<a class="sourceLine" id="cb26-10" data-line-number="10">)</a>
-<a class="sourceLine" id="cb26-11" data-line-number="11"></a>
-<a class="sourceLine" id="cb26-12" data-line-number="12"><span class="co"># forecast using generator</span></a>
-<a class="sourceLine" id="cb26-13" data-line-number="13">fcast &lt;-<span class="st"> </span>model <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/keras/topics/predict_generator">predict_generator</a></span>(</a>
-<a class="sourceLine" id="cb26-14" data-line-number="14">  <span class="dt">generator =</span> fcast_gen,</a>
-<a class="sourceLine" id="cb26-15" data-line-number="15">  <span class="dt">steps =</span> fcast_steps</a>
-<a class="sourceLine" id="cb26-16" data-line-number="16">)</a>
-<a class="sourceLine" id="cb26-17" data-line-number="17"></a>
-<a class="sourceLine" id="cb26-18" data-line-number="18"><span class="co"># check the structure</span></a>
-<a class="sourceLine" id="cb26-19" data-line-number="19"><span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/str">str</a></span>(fcast)</a></code></pre></div>
-<pre><code>##  num [1:12, 1] 1.78 1.78 1.78 1.78 1.78 ...</code></pre>
+<a class="sourceLine" id="cb26-9" data-line-number="9">  <span class="dt">batch_size =</span> batch_size,</a>
+<a class="sourceLine" id="cb26-10" data-line-number="10">  <span class="dt">prep_funs =</span> prep_funs</a>
+<a class="sourceLine" id="cb26-11" data-line-number="11">)</a>
+<a class="sourceLine" id="cb26-12" data-line-number="12"></a>
+<a class="sourceLine" id="cb26-13" data-line-number="13"><span class="co"># forecast using generator</span></a>
+<a class="sourceLine" id="cb26-14" data-line-number="14">fcast &lt;-<span class="st"> </span>model <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/keras/topics/predict_generator">predict_generator</a></span>(</a>
+<a class="sourceLine" id="cb26-15" data-line-number="15">  <span class="dt">generator =</span> fcast_gen,</a>
+<a class="sourceLine" id="cb26-16" data-line-number="16">  <span class="dt">steps =</span> fcast_steps</a>
+<a class="sourceLine" id="cb26-17" data-line-number="17">)</a>
+<a class="sourceLine" id="cb26-18" data-line-number="18"></a>
+<a class="sourceLine" id="cb26-19" data-line-number="19"><span class="co"># check the content</span></a>
+<a class="sourceLine" id="cb26-20" data-line-number="20"><span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/str">str</a></span>(fcast)</a></code></pre></div>
+<pre><code>##  num [1:12, 1] 1.39 1.43 1.49 1.52 1.5 ...</code></pre>
+<p><strong>BONUS:</strong> you can reconvert the forecast output like this</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb28-1" data-line-number="1"><span class="co"># import libs</span></a>
+<a class="sourceLine" id="cb28-2" data-line-number="2"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(timetk)</a>
+<a class="sourceLine" id="cb28-3" data-line-number="3"></a>
+<a class="sourceLine" id="cb28-4" data-line-number="4"><span class="co"># make future time series index</span></a>
+<a class="sourceLine" id="cb28-5" data-line-number="5">fcast_index &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/timetk/topics/tk_make_future_timeseries">tk_make_future_timeseries</a></span>(</a>
+<a class="sourceLine" id="cb28-6" data-line-number="6">  <span class="dt">idx =</span> traffic_tbl<span class="op">$</span>datetime,</a>
+<a class="sourceLine" id="cb28-7" data-line-number="7">  <span class="dt">n_future =</span> horizon</a>
+<a class="sourceLine" id="cb28-8" data-line-number="8">)</a>
+<a class="sourceLine" id="cb28-9" data-line-number="9"></a>
+<a class="sourceLine" id="cb28-10" data-line-number="10"><span class="co"># get recipe values for revert back</span></a>
+<a class="sourceLine" id="cb28-11" data-line-number="11">recipe_center &lt;-<span class="st"> </span>recipe_obj<span class="op">$</span>steps[[<span class="dv">2</span>]]<span class="op">$</span>means[<span class="st">"traffic"</span>]</a>
+<a class="sourceLine" id="cb28-12" data-line-number="12">recipe_scale &lt;-<span class="st"> </span>recipe_obj<span class="op">$</span>steps[[<span class="dv">3</span>]]<span class="op">$</span>sds[<span class="st">"traffic"</span>]</a>
+<a class="sourceLine" id="cb28-13" data-line-number="13"></a>
+<a class="sourceLine" id="cb28-14" data-line-number="14"><span class="co"># check the forecast output</span></a>
+<a class="sourceLine" id="cb28-15" data-line-number="15">fcast <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb28-16" data-line-number="16"><span class="st">  </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/as.data.frame">as.data.frame</a></span>() <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb28-17" data-line-number="17"><span class="st">  </span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/setNames">setNames</a></span>(<span class="st">"traffic"</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb28-18" data-line-number="18"><span class="st">  </span><span class="kw">mutate</span>(</a>
+<a class="sourceLine" id="cb28-19" data-line-number="19">    <span class="dt">datetime =</span> fcast_index,</a>
+<a class="sourceLine" id="cb28-20" data-line-number="20">    <span class="dt">traffic =</span> (traffic <span class="op">*</span><span class="st"> </span>recipe_scale <span class="op">+</span><span class="st"> </span>recipe_center) <span class="op">^</span><span class="st"> </span><span class="dv">2</span></a>
+<a class="sourceLine" id="cb28-21" data-line-number="21">  ) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb28-22" data-line-number="22"><span class="st">  </span><span class="kw">select</span>(datetime, traffic) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb28-23" data-line-number="23"><span class="st">  </span><span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/head">head</a></span>()</a></code></pre></div>
+<pre><code>##              datetime    traffic
+## 1 2005-07-28 14:00:00 6870224535
+## 2 2005-07-28 14:05:00 6997586948
+## 3 2005-07-28 14:10:00 7167291333
+## 4 2005-07-28 14:15:00 7257118442
+## 5 2005-07-28 14:20:00 7205969106
+## 6 2005-07-28 14:25:00 7113351632</code></pre>
 </div>
 <div id="reference" class="section level1 unnumbered">
 <h1 class="hasAnchor">
@@ -459,8 +489,7 @@ Supervised time series model illustration
       <h2 class="hasAnchor">
 <a href="#tocnav" class="anchor"></a>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
-<li><a href="#preface">Preface</a></li>
-      <li><a href="#introduction">Understanding the Time Series Array Shape</a></li>
+<li><a href="#introduction">Understanding the Time Series Array Shape</a></li>
       <li><a href="#fitting">Fitting a Time Series Model</a></li>
       <li><a href="#forecast">Forecasting using Data Generator</a></li>
       <li><a href="#reference">References</a></li>

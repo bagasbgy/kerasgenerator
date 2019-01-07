@@ -26,8 +26,6 @@ knitr::opts_chunk$set(
 
 ```
 
-# Preface {#preface}
-
 Preparing a proper dataset for a supervised time series model in R sometimes could become very complex and tedious. There are some tutorials that already cover this kind of task: check out the tutorial made by [Dancho and Keydana](https://blogs.rstudio.com/tensorflow/posts/2018-06-25-sunspots-lstm/) [-@dancho2018predicting] for basic univariate model fitting without using data generator, and the one made by [Chollet and Allaire](https://blogs.rstudio.com/tensorflow/posts/2017-12-20-time-series-forecasting-with-recurrent-neural-networks/) [-@chollet2017time] for the multivariate model with a custom data generator. However, as you could see from the articles, there are no general framework on how to properly do the data preparation process.
 
 In this article we will show you how `kerasgenerator` could help us in preparing a data generator for supervised time series [`keras`](https://keras.rstudio.com) models.
@@ -50,15 +48,16 @@ To understand better what each dimensions representing, let's follow a quick exa
 ```{r}
 
 # import libs
+library(lubridate)
+library(magrittr)
 library(rdatamarket)
 library(tidyverse)
-library(lubridate)
 
 # import dataset
 traffic_tbl <- dmlist("http://bit.ly/1W1mCQ3")
 
 # readjust datetime
-traffic_tbl <- traffic_tbl %>%
+traffic_tbl %<>%
   select(datetime = DateTime, traffic = Value) %>%
   mutate(datetime = ymd_hms(datetime))
 
@@ -83,16 +82,20 @@ traffic_tbl %>%
     scale_x_datetime(label = date_format("%a, %b %e, %H:%M:%S")) +
     scale_y_continuous(
       label = unit_format(unit = "M", scale = 1e-09, accuracy = 0.01)
-    )
+    ) +
+    theme_tq()
 
 ```
 
 In supervised time series model, we need to define two important parameters for our datasets:
 
-lookback period
-  : The lookback period is determining **how many period behind should the targets lookup for its signal**, but it should be noted that **the periods in-between will be ignored**. For example, for target $y_t$ and $l$ lookback, then the target will lookup for feature $x_{t-l}$.
-timestep length
-  : This parameter define **the length of a sample of feature** that would be considered as a sequence of signal for the target. For example, for feature $x_t$ and $ts$ timesteps length, then the target will lookup for feature $x_t, x_{t-l}, x_{t-2}, ..., x_{t-ts+1}$.
+* lookback period:
+  
+  The lookback period is determining **how many period behind should the targets lookup for its signal**, but it should be noted that **the periods in-between will be ignored**. For example, for target $y_t$ and $l$ lookback, then the target will lookup for feature $x_{t-l}$.
+  
+* timestep length:
+
+  This parameter define **the length of a sample of feature** that would be considered as a sequence of signal for the target. For example, for feature $x_t$ and $ts$ timesteps length, then the target will lookup for feature $x_t, x_{t-l}, x_{t-2}, ..., x_{t-ts+1}$.
 
 **Note** that the terms that I just mentioned might be differ from other source. While all the version reach to a same understanding, I really suggest you to read the original paper of [Long Short-Term Memory](https://www.bioinf.jku.at/publications/older/2604.pdf) layer [@hochreiter1997long] and other valid resources to reach a better understanding of the terminologies.
 
@@ -116,7 +119,7 @@ paste("Feature end:", traffic_tbl$datetime[feature_end])
 
 ```
 
-Notice that I set the `feature_start` to be `feature_end - timesteps + 1. This is because the `timesteps` value is representing the length of a feature--if we don't add `+ 1`, the timesteps would be longer by 1 value. See the following figure for an illustration:
+Notice that I set the `feature_start` to be `feature_end - timesteps + 1`. This is because the `timesteps` value is representing the length of a feature--if we don't add `+ 1`, the timesteps would be longer by 1 value. See the following figure for an illustration:
 
 ```{r, echo=FALSE, fig.cap="Supervised time series model illustration"}
 
@@ -126,8 +129,10 @@ start_date <- traffic_tbl$datetime[feature_start]
 end_date <- traffic_tbl$datetime[feature_end]
 
 # illustration
-traffic_tbl %>%
-  tail(12 * 2.5) %>%
+plot_tbl <- traffic_tbl %>%
+  tail(12 * 2.25)
+  
+plot_tbl %>%
   ggplot(aes(x = datetime, y = traffic)) +
     geom_line() +
     geom_point(
@@ -139,7 +144,7 @@ traffic_tbl %>%
     annotate(
       geom = "text",
       x = target_date,
-      y = 6.95 * 1e+09,
+      y = traffic_tbl$traffic[target] * 1.05,
       label = "Target",
       colour = "darkred",
       angle = 90
@@ -148,15 +153,15 @@ traffic_tbl %>%
       geom = "segment",
       x = target_date,
       xend = target_date,
-      y = 6.9 * 1e+09,
-      yend = 6.75 * 1e+09,
+      y = traffic_tbl$traffic[target] * 1.04,
+      yend = traffic_tbl$traffic[target] * 1.01,
       colour = "darkred",
       arrow = arrow(length = unit(0.25, "cm"))
     ) +
     annotate(
       geom = "text",
       x = start_date + difftime(end_date, start_date) / 2,
-      y = 6.95 * 1e+09,
+      y = max(plot_tbl$traffic) * 1.01,
       label = glue::glue(
         "A sequence-feature", "\n",
         "with {timesteps} timesteps"
@@ -199,10 +204,7 @@ y_row <- target
 x_row <- y_row - lookback
 
 # adjust the x indices according to the timesteps
-x_indices <- seq(
-  from = x_row - timesteps + 1,
-  to = x_row
-)
+x_indices <- seq(x_row - timesteps + 1, x_row)
 
 # convert the table into matrix
 traffic_matrix <- data.matrix(traffic_tbl)
@@ -306,7 +308,8 @@ prep_funs <- function(data) {
     object = recipe_obj,
     new_data = data
   )
-  # return the data
+  
+  # return the processed data
   return(newdata)
   
 }
@@ -416,9 +419,9 @@ epochs <- 30
 history <- model %>% fit_generator(
   generator = train_gen,
   steps_per_epoch = train_steps,
-  epochs = epochs,
   validation_data = val_gen,
-  validation_steps = val_steps
+  validation_steps = val_steps,
+  epochs = epochs
 )
 
 # history plot
@@ -471,7 +474,7 @@ fcast_steps <- ceiling(horizon / batch_size)
 
 **Note that the forecast `horizon` should not be greater than the value of `lookback` if you want to forecast from the last observation**.
 
-Then, we can proceed to define the generator and pass it to [`predict_generator()`]((https://keras.rstudio.com/reference/predict_generator.html)) function:
+Then, we can proceed to define the generator for forecasting and pass it to [`predict_generator()`]((https://keras.rstudio.com/reference/predict_generator.html)) function.
 
 ```{r}
 
@@ -483,7 +486,8 @@ fcast_gen <- forecast_generator(
   timesteps = timesteps,
   last_index = last_index,
   horizon = horizon,
-  batch_size = batch_size
+  batch_size = batch_size,
+  prep_funs = prep_funs
 )
 
 # forecast using generator
@@ -492,9 +496,40 @@ fcast <- model %>% predict_generator(
   steps = fcast_steps
 )
 
-# check the structure
+# check the content
 str(fcast)
 
 ```
+
+**BONUS:** you can reconvert the forecast output like this
+
+```{r}
+
+# import libs
+library(timetk)
+
+# make future time series index
+fcast_index <- tk_make_future_timeseries(
+  idx = traffic_tbl$datetime,
+  n_future = horizon
+)
+
+# get recipe values for revert back
+recipe_center <- recipe_obj$steps[[2]]$means["traffic"]
+recipe_scale <- recipe_obj$steps[[3]]$sds["traffic"]
+
+# check the forecast output
+fcast %>%
+  as.data.frame() %>%
+  setNames("traffic") %>%
+  mutate(
+    datetime = fcast_index,
+    traffic = (traffic * recipe_scale + recipe_center) ^ 2
+  ) %>%
+  select(datetime, traffic) %>%
+  head()
+
+```
+
 
 # References {#reference}
