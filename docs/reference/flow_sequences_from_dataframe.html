@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Function reference • kerasgenerator</title>
+<title>Setup a sequence data generator specification — flow_sequences_from_dataframe • kerasgenerator</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -44,7 +44,8 @@
   <link href="../extra.css" rel="stylesheet">
   
 
-<meta property="og:title" content="Function reference" />
+<meta property="og:title" content="Setup a sequence data generator specification — flow_sequences_from_dataframe" />
+<meta property="og:description" content="Setup a sequence data generator specification" />
 <meta property="og:image" content="/logo.png" />
 <meta name="twitter:card" content="summary" />
 
@@ -65,7 +66,7 @@
   </head>
 
   <body>
-    <div class="container template-reference-index">
+    <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -107,42 +108,98 @@
       </header>
 
 <div class="row">
-  <div class="contents col-md-9">
+  <div class="col-md-9 contents">
     <div class="page-header">
-      <h1>Reference</h1>
+    <h1>Setup a sequence data generator specification</h1>
+    
+    <div class="hidden name"><code>flow_sequences_from_dataframe.Rd</code></div>
     </div>
 
-    <table class="ref-index">
+    <div class="ref-description">
+    <p>Setup a sequence data generator specification</p>
+    </div>
 
-    <colgroup>
-      
-      <col class="alias" />
-      <col class="title" />
-    </colgroup>
+    <pre class="usage"><span class='fu'>flow_sequences_from_dataframe</span>(<span class='no'>data</span>, <span class='no'>x_names</span>, <span class='no'>y_names</span>, <span class='no'>lookback</span>, <span class='no'>timesteps</span>,
+  <span class='kw'>batch_size</span> <span class='kw'>=</span> <span class='fl'>32</span>, <span class='kw'>mode</span> <span class='kw'>=</span> <span class='st'>"training"</span>)</pre>
 
-    <tbody>
-      <tr>
-        <th colspan="2">
-          <h2 id="section-all-functions" class="hasAnchor"><a href="#section-all-functions" class="anchor"></a>All functions</h2>
-          <p class="section-desc"></p>
-        </th>
-      </tr>
-      <tr>
-        
-        <td>
-          <p><code><a href="flow_sequences_from_dataframe.html">flow_sequences_from_dataframe()</a></code> </p>
-        </td>
-        <td><p>Setup a sequence data generator specification</p></td>
-      </tr>
-    </tbody>
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>data</th>
+      <td><p>A <code>tibble</code> or <code>data.frame</code>.</p></td>
+    </tr>
+    <tr>
+      <th>x_names</th>
+      <td><p>A <code>character</code> vectors containing
+the column names for x variables</p></td>
+    </tr>
+    <tr>
+      <th>y_names</th>
+      <td><p>A <code>character</code> vectors containing
+the column names for y variables</p></td>
+    </tr>
+    <tr>
+      <th>lookback</th>
+      <td><p>An <code>integer</code> specifying lookback period.</p></td>
+    </tr>
+    <tr>
+      <th>timesteps</th>
+      <td><p>An <code>integer</code> specifying timesteps length.</p></td>
+    </tr>
+    <tr>
+      <th>batch_size</th>
+      <td><p>An <code>integer</code> specifying batch size.</p></td>
+    </tr>
+    <tr>
+      <th>mode</th>
+      <td><p>A <code>character</code> vector of length one which specify
+the generator behaviour: either <code>"training"</code> or <code>"prediction"</code>.
+See details for further information.</p></td>
+    </tr>
     </table>
-  </div>
 
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>A <code>function</code> which could generate batches of x and/or y arrays</p>
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>soon updated</p>
+
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'>
+<span class='co'># import library</span>
+<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>kerasgenerator</span>)
+
+<span class='co'># create example data</span>
+<span class='no'>sunspots_df</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/as.data.frame.html'>as.data.frame</a></span>(<span class='no'>sunspots</span>)
+
+<span class='co'># setup a generator</span>
+<span class='no'>data_gen</span> <span class='kw'>&lt;-</span> <span class='fu'>flow_sequences_from_dataframe</span>(
+  <span class='kw'>data</span> <span class='kw'>=</span> <span class='no'>sunspots_df</span>,
+  <span class='kw'>x_names</span> <span class='kw'>=</span> <span class='st'>"x"</span>,
+  <span class='kw'>y_names</span> <span class='kw'>=</span> <span class='st'>"x"</span>,
+  <span class='kw'>lookback</span> <span class='kw'>=</span> <span class='fl'>1</span>,
+  <span class='kw'>timesteps</span> <span class='kw'>=</span> <span class='fl'>12</span>,
+  <span class='kw'>batch_size</span> <span class='kw'>=</span> <span class='fl'>32</span>,
+  <span class='kw'>mode</span> <span class='kw'>=</span> <span class='st'>"training"</span>
+)
+
+<span class='co'># quick check</span>
+<span class='no'>arrays</span> <span class='kw'>&lt;-</span> <span class='fu'>data_gen</span>()
+
+<span class='fu'><a href='https://rdrr.io/r/utils/str.html'>str</a></span>(<span class='no'>arrays</span><span class='kw'>[[</span><span class='fl'>1</span>]])</div><div class='output co'>#&gt;  num [1:32, 1:12, 1] 58 62.6 70 55.7 85 83.5 94.8 66.3 75.9 75.5 ...</div><div class='input'><span class='fu'><a href='https://rdrr.io/r/utils/str.html'>str</a></span>(<span class='no'>arrays</span><span class='kw'>[[</span><span class='fl'>2</span>]])</div><div class='output co'>#&gt;  num [1:32, 1] 73.3 75.9 89.2 88.3 90 100 85.4 103 91.2 65.7 ...</div><div class='input'>
+</div></pre>
+  </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-      <li><a href="#section-all-functions">All functions</a></li>
+      <li><a href="#arguments">Arguments</a></li>
+      <li><a href="#value">Value</a></li>
+      <li><a href="#details">Details</a></li>
+      <li><a href="#examples">Examples</a></li>
     </ul>
+
   </div>
 </div>
 

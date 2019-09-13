@@ -1,13 +1,8 @@
-^.*\.Rproj$
+^kerasgenerator\.Rproj$
 ^\.Rproj\.user$
-^\.git$
-^\.gitignore$
-
 ^README\.Rmd$
 ^LICENSE\.md$
-
+^\.travis\.yml$
+^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
-^vignettes$
-
-^script$

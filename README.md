@@ -1,27 +1,23 @@
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
+# kerasgenerator <img src='man/figures/logo.svg' align='right' height='139'/>
 
-# kerasgenerator <img src="man/figures/logo.svg" align="right" height=140/>
+<!-- badges: start -->
 
-`kerasgenerator` package is shipped with some data generator functions,
-which are designed to make the data generation process for
-[`keras`](https://keras.rstudio.com) models easier.
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
+[![Travis build
+status](https://travis-ci.org/bagasbgy/kerasgenerator.svg?branch=master)](https://travis-ci.org/bagasbgy/kerasgenerator)
+<!-- badges: end -->
+
+The `kerasgenerator` package provided a collection of data generators
+that could help in data generating process for various deep learning
+tasks using `keras`.
 
 ## Installation
 
-The package is in early development stage and currently only available
-via GitHub. You can install the development version using
-[`install_github()`](http://devtools.r-lib.org/reference/install_github):
+You can install the development version of `kerasgenerator` using:
 
 ``` r
-# install devtools first if you haven't
-if (!require(devtools)) install.packages("devtools")
-
-# install the development version from GitHub
-devtools::install_github("bagasbgy/kerasgenerator")
+# install.packages("remotes")
+remotes::install_github("bagasbgy/kerasgenerator")
 ```
-
-## Further Development
-
-  - Support for generating data from **file(s) in specified path**
-  - Data generator for **k-shot learning** model fitting

@@ -1,22 +1,24 @@
 Package: kerasgenerator
-Title: Data Generator for R interface to Keras
-Version: 0.1.2
+Title: Data generator for deep learning using Keras interface to R
+Version: 0.0.0.9000
 Authors@R:
   person(
     given = "R. Dimas Bagas",
     family = "Herlambang",
-    role = c("aut", "cre", "cph"),
+    role = c("aut", "cre"),
     email = "bagasbgy@gmail.com"
   )
-Description: Some Keras data generator functions for various deep learning scenario. Designed to make data generation process for fitting a Keras model easier.
+Description: A collection of data generator for various deep learning tasks
+  using Keras interface to R.
 License: MIT + file LICENSE
-URL: https://github.com/bagasbgy/kerasgenerator
-BugReports: https://github.com/bagasbgy/kerasgenerator/issues
 Encoding: UTF-8
-Language: en-US
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 6.1.1
+Depends:
+  R (>= 3.5.0)
+Imports:
+  methods,
+  tibble
 Suggests:
-    keras,
-    testthat
+  testthat (>= 2.1.0)
