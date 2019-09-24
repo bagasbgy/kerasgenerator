@@ -6,3 +6,6 @@
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
+^vignettes/.*\.csl$
+^vignettes/.*\.bib$
+^vignettes/timeseries\.Rmd$

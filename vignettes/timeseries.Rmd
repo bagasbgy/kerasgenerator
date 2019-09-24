@@ -1,0 +1,1022 @@
+---
+title: "Data Generator for Supervised Time Series using Keras"
+author: "R. Dimas Bagas Herlambang"
+date: "`r format(Sys.Date(), '%B %e, %Y')`"
+bibliography: timeseries.bib
+csl: apa.csl
+link-citations: yes
+---
+
+```{r setup, include = FALSE}
+# clear-up the environment
+rm(list = ls())
+
+# chunk options
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  fig.asp = 0.5625,
+  fig.align = "center",
+  out.width = "85%",
+  collapse = TRUE,
+  comment = "#>"
+)
+
+# import background libs
+library(gganimate)
+library(glue)
+```
+
+## Introduction
+
+Time series and forecasting using Deep Learning approach is gaining more popularity recently. From classic Recurrent Neural Network (RNN) implementation, like Long Short-Term Memory [@hochreiter_long_1997] which adopted by some big names like Uber [@laptev_engineering_2017], to some unorthodox approach like WaveNet [@van_den_oord_wavenet_2016]; all of these huge breakthrough show us that Deep Learning approaches are very promising. Yet, the supervised time series data generator is still getting less attention, and many available resources don't have a clear consensus regarding the standard.
+
+To address this issue, `kerasgenerator` provide; `flow_series_from_dataframe()` function to helps us understand the data generation process for supervised time series problems. In this article, we will going through some basic supervised time series parameters, which also complemented with an univariate time series data as an example.
+
+**Note** that, actually, there are several articles that already addressing similar examples; and highly recommended to read! Some of those articles are including Chollet and Allaire [-@chollet_tensorflow_2017], and Dancho and Keydana [-@dancho_tensorflow_2018]. Thus, this article is intended to help us understand more the data generation process through visualizations and animations, which inline with the parameters that would be used inside the `flow_series_from_dataframe()` funciton.
+
+### Libraries used
+
+For this example, we will going through some implementation example. For this example, we will use several libraries:
+
+```{r libs}
+# import libs
+library(keras)
+library(kerasgenerator)
+library(lubridate)
+library(tidymodels)
+library(tidyverse)
+```
+
+### Example problems
+
+In this article, we will use **`AirPassengers`** dataset, which already available in base R installation. This dataset represent an univariate monthly time series and very suitable for basic example: **"Can we predict the number of international airline passengers based on its historical data?"**
+
+```{r}
+# example data
+airpassenger_df <- as_tibble(AirPassengers) %>%
+  mutate(date = seq.Date(ymd("1949-01-01"), by = "1 month", length.out = nrow(.))) %>% 
+  select(date, passenger = x)
+
+# quick check
+ggplot(airpassenger_df, aes(x = date, y = passenger)) +
+  geom_line() +
+  labs(title = "Number of international airline passengers", x = NULL, y = NULL) +
+  theme_minimal()
+```
+
+### Supervised time series
+
+There are a slight differences between our "usual" time series and supervised time series approach. In classical time series models, we are seeking the best fit to the supplied time series, then make those fitted model to create a forecast. For supervised time series, we are going to make a model through supervised approach: **given a set of `x` values, can we predict the `y` value(s)?** So instead of just giving the time series, we should also define the `x`s as our past values, and `y`s as our future values from the specified time series.
+
+Let's start by the `x`s. The `x` values are intended to be our predictors. Generally speaking, like in every supervised problem, the `x`s could be from one variable--as in univariate time series problems--or from multiple variables--as in multivariate time series problems.
+
+However, there are some important parameters that we need to set to make our `x`s represent a proper predictor in our supervised time series problems. These parameters are `lookback` and `timesteps`:
+
+* **`lookback`**: How much we should lookback for our last `x` value to predict the `y`?
+* **`timesteps`**: How many `x` we will consider to predict the `y`?
+
+To put it simply, let's say for our monthly `airpassenger_df` data we want to predict the value of `passenger` in January 1951 using last 24 historical data--January 1949 to December 1950--then we will use `lookback = 1` and `timesteps = 24`. For another example, we want to predict the value in January 1951 using only the data from January 1950--the exact same month but in the previous year--then we will use `lookback = 12` and `timesteps = 1`.
+
+We will see some example animation for these settings, but we need to understand the parameters regarding our `y` values first. In supervised time series, the `y` parameters could help us determine the forecast horizon, as in `h` parameter inside [`forecast()`](http://pkg.robjhyndman.com/forecast/reference/forecast.html) function. These parameters are `length_out` and `stride`:
+
+* **`length_out`**: How many time ahead that we will predict?
+* **`stride`**: How much is the sampling rate between consecutive `y` values?
+
+Finally, to helps us understand, we will going through several type of supervised time series problems in the following sections.
+
+#### Many-to-one
+
+<!-- in development -->
+
+```{r}
+# an example generator settings: many-to-one with stride = 1
+x <- "passenger"
+y <- "passenger"
+length_out <- 1
+stride <- 1
+lookback <- 1
+timesteps <- 24
+batch_size <- 12
+
+# an example generator: many-to-one
+data_gen <- flow_series_from_dataframe(
+  data = airpassenger_df,
+  x = x,
+  y = y,
+  length_out = length_out,
+  stride = stride,
+  lookback = lookback,
+  timesteps = timesteps,
+  batch_size = batch_size,
+  mode = "training"
+)
+
+# quick check
+str(data_gen())
+```
+
+<!-- in development -->
+
+```{r, echo=FALSE}
+# prepare supervised time series data
+i <- generator_meta(data_gen, "i")
+j <- generator_meta(data_gen, "j")
+
+data_supervised_ts <- NULL
+
+for (batch in 1:generator_meta(data_gen, "steps_to_all")) {
+  
+  ij <- c(i[batch]:j[batch])
+  
+  y_rows <- list()
+  x_rows <- list()
+  
+  n <- 0
+
+  for (size in 1:batch_size) {
+
+    if (length_out + stride * (size - 1) <= length(ij)) {
+
+      n <- n + 1
+
+    }
+
+  }
+
+  for (index in 1:n) {
+
+    y_rows[[index]] <- ij[c(1:length_out) + stride * (index - 1)]
+
+    x_rows[[index]] <- (min(y_rows[[index]]) - timesteps + 1):min(y_rows[[index]])
+
+    x_rows[[index]] <- x_rows[[index]] - lookback
+
+  }
+
+  for (obs in 1:length(x_rows)) {
+    
+    result_x <- tibble(
+      batch = batch,
+      sample = obs,
+      series = "x",
+      steps = 1:24,
+      date = airpassenger_df$date[x_rows[[obs]]],
+      passenger = airpassenger_df$passenger[x_rows[[obs]]]
+    )
+    
+    result_y <- tibble(
+      batch = batch,
+      sample = obs,
+      series = "y",
+      steps = 1,
+      date = airpassenger_df$date[y_rows[[obs]]],
+      passenger = airpassenger_df$passenger[y_rows[[obs]]]
+    )
+    
+    data_supervised_ts <- bind_rows(data_supervised_ts, result_x, result_y)
+    
+  }
+
+}
+
+# prepare visualization data
+data_viz <- data_supervised_ts %>% 
+  filter(batch <= 4) %>% 
+  mutate(
+    batch = str_pad(batch, width = 3, pad = 0),
+    sample = str_pad(sample, width = 3, pad = 0),
+    states = glue("Batch: {batch}, Sample: {sample}")
+  )
+
+# visualize supervised time series
+p <- ggplot(data_viz, aes(x = date, y = passenger)) +
+  geom_line(alpha = 0.15) +
+  geom_point(aes(colour = series, size = steps), alpha = 0.45) +
+  labs(
+    title = "{closest_state}",
+    x = NULL,
+    y = NULL,
+    colour = "Roles:",
+    size = "Steps:"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "top") +
+  scale_colour_manual(values = c("x" = "darkblue", "y" = "darkred")) +
+  scale_size_continuous(range = c(2, 4)) +
+  transition_states(states = states) +
+  enter_fade() +
+  exit_fade() +
+  ease_aes('sine-in-out')
+
+animate(p, width = 600, height = 450)
+```
+
+<!-- in development -->
+
+#### Many-to-many
+
+<!-- in development -->
+
+```{r}
+# an example generator settings: many-to-many with stride = 1
+x <- "passenger"
+y <- "passenger"
+length_out <- 12
+stride <- 1
+lookback <- 1
+timesteps <- 24
+batch_size <- 12
+
+# an example generator: many-to-many, stride = 1
+data_gen <- flow_series_from_dataframe(
+  data = airpassenger_df,
+  x = x,
+  y = y,
+  length_out = length_out,
+  stride = stride,
+  lookback = lookback,
+  timesteps = timesteps,
+  batch_size = batch_size,
+  mode = "training"
+)
+
+# quick check
+str(data_gen())
+```
+
+<!-- in development -->
+
+```{r, echo=FALSE}
+# prepare supervised time series data
+i <- generator_meta(data_gen, "i")
+j <- generator_meta(data_gen, "j")
+
+data_supervised_ts <- NULL
+
+for (batch in 1:generator_meta(data_gen, "steps_to_all")) {
+  
+  ij <- c(i[batch]:j[batch])
+  
+  y_rows <- list()
+  x_rows <- list()
+  
+  n <- 0
+
+  for (size in 1:batch_size) {
+
+    if (length_out + stride * (size - 1) <= length(ij)) {
+
+      n <- n + 1
+
+    }
+
+  }
+
+  for (index in 1:n) {
+
+    y_rows[[index]] <- ij[c(1:length_out) + stride * (index - 1)]
+
+    x_rows[[index]] <- (min(y_rows[[index]]) - timesteps + 1):min(y_rows[[index]])
+
+    x_rows[[index]] <- x_rows[[index]] - lookback
+
+  }
+
+  for (obs in 1:length(x_rows)) {
+    
+    result_x <- tibble(
+      batch = batch,
+      sample = obs,
+      series = "x",
+      steps = 1:24,
+      date = airpassenger_df$date[x_rows[[obs]]],
+      passenger = airpassenger_df$passenger[x_rows[[obs]]]
+    )
+    
+    result_y <- tibble(
+      batch = batch,
+      sample = obs,
+      series = "y",
+      steps = 1:12,
+      date = airpassenger_df$date[y_rows[[obs]]],
+      passenger = airpassenger_df$passenger[y_rows[[obs]]]
+    )
+    
+    data_supervised_ts <- bind_rows(data_supervised_ts, result_x, result_y)
+    
+  }
+
+}
+
+# prepare visualization data
+data_viz <- data_supervised_ts %>% 
+  filter(batch <= 4) %>% 
+  mutate(
+    batch = str_pad(batch, width = 3, pad = 0),
+    sample = str_pad(sample, width = 3, pad = 0),
+    states = glue("Batch: {batch}, Sample: {sample}")
+  )
+
+# visualize supervised time series
+p <- ggplot(data_viz, aes(x = date, y = passenger)) +
+  geom_line(alpha = 0.15) +
+  geom_point(aes(colour = series, size = steps), alpha = 0.45) +
+  labs(
+    title = "{closest_state}",
+    x = NULL,
+    y = NULL,
+    colour = "Roles:",
+    size = "Steps:"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "top") +
+  scale_colour_manual(values = c("x" = "darkblue", "y" = "darkred")) +
+  scale_size_continuous(range = c(2, 4)) +
+  transition_states(states = states) +
+  enter_fade() +
+  exit_fade() +
+  ease_aes('sine-in-out')
+
+animate(p, width = 600, height = 450)
+```
+
+<!-- in development -->
+
+```{r}
+# an example generator settings: many-to-many with stride = 12
+x <- "passenger"
+y <- "passenger"
+length_out <- 12
+stride <- 12
+lookback <- 1
+timesteps <- 24
+batch_size <- 2
+
+# an example generator: many-to-many, stride = 12
+data_gen <- flow_series_from_dataframe(
+  data = airpassenger_df,
+  x = x,
+  y = y,
+  length_out = length_out,
+  stride = stride,
+  lookback = lookback,
+  timesteps = timesteps,
+  batch_size = batch_size,
+  mode = "training"
+)
+
+# quick check
+str(data_gen())
+```
+
+<!-- in development -->
+
+```{r, echo=FALSE}
+# prepare supervised time series data
+i <- generator_meta(data_gen, "i")
+j <- generator_meta(data_gen, "j")
+
+data_supervised_ts <- NULL
+
+for (batch in 1:generator_meta(data_gen, "steps_to_all")) {
+  
+  ij <- c(i[batch]:j[batch])
+  
+  y_rows <- list()
+  x_rows <- list()
+  
+  n <- 0
+
+  for (size in 1:batch_size) {
+
+    if (length_out + stride * (size - 1) <= length(ij)) {
+
+      n <- n + 1
+
+    }
+
+  }
+
+  for (index in 1:n) {
+
+    y_rows[[index]] <- ij[c(1:length_out) + stride * (index - 1)]
+
+    x_rows[[index]] <- (min(y_rows[[index]]) - timesteps + 1):min(y_rows[[index]])
+
+    x_rows[[index]] <- x_rows[[index]] - lookback
+
+  }
+
+  for (obs in 1:length(x_rows)) {
+    
+    result_x <- tibble(
+      batch = batch,
+      sample = obs,
+      series = "x",
+      steps = 1:24,
+      date = airpassenger_df$date[x_rows[[obs]]],
+      passenger = airpassenger_df$passenger[x_rows[[obs]]]
+    )
+    
+    result_y <- tibble(
+      batch = batch,
+      sample = obs,
+      series = "y",
+      steps = 1:12,
+      date = airpassenger_df$date[y_rows[[obs]]],
+      passenger = airpassenger_df$passenger[y_rows[[obs]]]
+    )
+    
+    data_supervised_ts <- bind_rows(data_supervised_ts, result_x, result_y)
+    
+  }
+
+}
+
+# prepare visualization data
+data_viz <- data_supervised_ts %>% 
+  filter(batch <= 4) %>% 
+  mutate(
+    batch = str_pad(batch, width = 3, pad = 0),
+    sample = str_pad(sample, width = 3, pad = 0),
+    states = glue("Batch: {batch}, Sample: {sample}")
+  )
+
+# visualize supervised time series
+p <- ggplot(data_viz, aes(x = date, y = passenger)) +
+  geom_line(alpha = 0.15) +
+  geom_point(aes(colour = series, size = steps), alpha = 0.45) +
+  labs(
+    title = "{closest_state}",
+    x = NULL,
+    y = NULL,
+    colour = "Roles:",
+    size = "Steps:"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "top") +
+  scale_colour_manual(values = c("x" = "darkblue", "y" = "darkred")) +
+  scale_size_continuous(range = c(2, 4)) +
+  transition_states(states = states) +
+  enter_fade() +
+  exit_fade() +
+  ease_aes('sine-in-out')
+
+animate(p, width = 600, height = 450)
+```
+
+## Practical example
+
+### Many-to-one
+
+<!-- in development -->
+
+```{r}
+# supervised time series settings
+x <- "passenger"
+y <- "passenger"
+length_out <- 1
+stride <- 1
+lookback <- 1
+timesteps <- 24
+
+# validation and test size
+val_size <- 12
+test_size <- 12
+
+# test split
+data_test <- airpassenger_df %>% 
+  filter(row_number() > n() - test_size - lookback - timesteps + 1)
+
+# initial train after test-split
+data_train <- airpassenger_df %>% 
+  filter(row_number() <= n() - test_size)
+
+# validation split
+data_val <- data_train %>% 
+  filter(row_number() > n() - val_size - lookback - timesteps + 1)
+
+# final train after validation-split
+data_train <- data_train %>% 
+  filter(row_number() <= n() - val_size)
+```
+
+<!-- in development -->
+
+```{r}
+# create preprocess recipe
+rec <- recipe(passenger ~ ., data = data_train) %>% 
+  step_rm(date) %>% 
+  step_log(passenger) %>% 
+  step_normalize(passenger) %>% 
+  prep()
+
+# prepare recipes-revert functions
+rec_rev <- function(x, rec) {
+
+  means <- rec$steps[[3]]$means[["passenger"]]
+  sds <- rec$steps[[3]]$sds[["passenger"]]
+
+  x <- exp(x * sds + means)
+  x <- round(x)
+  x <- ifelse(x < 0, 0, x)
+
+  x
+
+}
+
+# get all preprocessed data
+data_train_prep <- juice(rec)
+data_val_prep <- bake(rec, data_val)
+data_test_prep <- bake(rec, data_test)
+```
+
+<!-- in development -->
+
+```{r}
+# generator settings
+batch_size <- 12
+
+# train-val-test generator
+data_train_gen <- flow_series_from_dataframe(
+  data = data_train_prep,
+  x = x,
+  y = y,
+  length_out = length_out,
+  stride = stride,
+  lookback = lookback,
+  timesteps = timesteps,
+  batch_size = batch_size,
+  mode = "training"
+)
+
+data_val_gen <- flow_series_from_dataframe(
+  data = data_val_prep,
+  x = x,
+  y = y,
+  length_out = length_out,
+  stride = stride,
+  lookback = lookback,
+  timesteps = timesteps,
+  batch_size = batch_size,
+  mode = "training"
+)
+
+data_test_gen <- flow_series_from_dataframe(
+  data = data_test_prep,
+  x = x,
+  y = y,
+  length_out = length_out,
+  stride = stride,
+  lookback = lookback,
+  timesteps = timesteps,
+  batch_size = batch_size,
+  mode = "training"
+)
+```
+
+<!-- in development -->
+
+```{r}
+# define input layer
+input <- layer_input(name = "input", shape = c(timesteps, length(x)))
+
+# define hidden layers
+cnn1 <- input %>% 
+  layer_conv_1d(name = "cnn_1_1", filters = 16, kernel_size = 12, padding = "same") %>% 
+  layer_activation_leaky_relu(name = "cnn_1_1_act") %>% 
+  layer_flatten(name = "cnn_1_1_flat")
+
+cnn2 <- input %>% 
+  layer_conv_1d(name = "cnn_2_1", filters = 16, kernel_size = 3, padding = "same") %>% 
+  layer_activation_leaky_relu(name = "cnn_2_1_act") %>% 
+  layer_flatten(name = "cnn_2_1_flat")
+
+cnn <- list(cnn1, cnn2) %>% 
+  layer_concatenate(name = "cnn_concat") %>% 
+  layer_dropout(name = "cnn_dp", rate = 0.1)
+
+hiddens <- cnn %>% 
+  layer_dense(name = "dense_1", units = 32) %>% 
+  layer_activation_leaky_relu(name = "dense_1_act") %>% 
+  layer_dropout(name = "dense_1_dp", rate = 0.1)
+
+# define output layers
+output <- hiddens %>%
+  layer_dense(name = "output", units = length(y) * length_out) %>% 
+  layer_reshape(name = "output_reshape", target_shape = c(length_out, 1))
+
+# wrap-up to full model
+model <- keras_model(inputs = input, outputs = output)
+
+# compile the model
+model %>% compile(
+  optimizer = optimizer_adam(lr = 0.0001),
+  loss = "mean_absolute_error"
+)
+
+# model summary
+summary(model)
+```
+
+<!-- in development -->
+
+```{r}
+# get generator meta
+steps_per_epoch <- generator_meta(data_train_gen, "steps_to_all")
+validation_steps <- generator_meta(data_val_gen, "steps_to_all")
+
+# fit the model
+history <- model %>% fit_generator(
+  generator = data_train_gen,
+  steps_per_epoch = steps_per_epoch,
+  epochs = 100,
+  validation_data = data_val_gen,
+  validation_steps = validation_steps
+)
+
+# visualize training results
+plot(history)
+```
+
+<!-- in development -->
+
+```{r}
+# get prediction on train
+pred_train <- model %>% 
+  predict_generator(
+    generator = generator_mode(data_train_gen, "prediction"),
+    steps = generator_meta(data_train_gen, "steps_to_all")
+  )
+
+pred_train <- as_tibble(pred_train)
+
+names(pred_train) <- "passenger"
+
+pred_train <- pred_train %>% 
+  mutate(
+    date = tail(data_train$date, nrow(pred_train)),
+    passenger = rec_rev(passenger, rec)
+  )
+
+# get prediction on validation
+pred_val <- model %>% 
+  predict_generator(
+    generator = generator_mode(data_val_gen, "prediction"),
+    steps = generator_meta(data_val_gen, "steps_to_all")
+  )
+
+pred_val <- as_tibble(pred_val)
+
+names(pred_val) <- "passenger"
+
+pred_val <- pred_val %>% 
+  mutate(
+    date = tail(data_val$date, nrow(pred_val)),
+    passenger = rec_rev(passenger, rec)
+  )
+
+# get prediction on test
+pred_test <- model %>% 
+  predict_generator(
+    generator = generator_mode(data_test_gen, "prediction"),
+    steps = generator_meta(data_test_gen, "steps_to_all")
+  )
+
+pred_test <- as_tibble(pred_test)
+
+names(pred_test) <- "passenger"
+
+pred_test <- pred_test %>% 
+  mutate(
+    date = tail(data_test$date, nrow(pred_test)),
+    passenger = rec_rev(passenger, rec)
+  )
+```
+
+<!-- in development -->
+
+```{r}
+# wrap-up all data
+data_list <- list(
+  "Actual" = airpassenger_df,
+  "Prediction-Train" = pred_train,
+  "Prediction-Validation" = bind_rows(tail(pred_train, 1), pred_val),
+  "Prediction-Test" = bind_rows(tail(pred_val, 1), pred_test)
+)
+
+# prepare visualization data
+data_viz <- bind_rows(data_list, .id = "series") %>% 
+  mutate(series = factor(series, levels = c(
+    "Actual",
+    "Prediction-Train",
+    "Prediction-Validation",
+    "Prediction-Test"
+  )))
+
+# visualize
+ggplot(data_viz, aes(x = date, y = passenger)) +
+  geom_line(aes(colour = series)) +
+  labs(x = NULL, y = NULL, colour = NULL) +
+  theme_minimal() +
+  theme(legend.position = "top") +
+  scale_colour_manual(values = c(
+    "Actual" = "black",
+    "Prediction-Train" = "blue",
+    "Prediction-Validation" = "green",
+    "Prediction-Test" = "red"
+  ))
+```
+
+<!-- in development -->
+
+### Many-to-many
+
+<!-- in development -->
+
+```{r}
+# supervised time series settings
+x <- "passenger"
+y <- "passenger"
+length_out <- 12
+stride <- 12
+lookback <- 1
+timesteps <- 24
+
+# validation and test size
+val_size <- 1 * length_out
+test_size <- 1 * length_out
+
+# test split
+data_test <- airpassenger_df %>% 
+  filter(row_number() > n() - test_size - lookback - timesteps + 1)
+
+# initial train after test-split
+data_train <- airpassenger_df %>% 
+  filter(row_number() <= n() - test_size)
+
+# validation split
+data_val <- data_train %>% 
+  filter(row_number() > n() - val_size - lookback - timesteps + 1)
+
+# final train after validation-split
+data_train <- data_train %>% 
+  filter(row_number() <= n() - val_size)
+```
+
+<!-- in development -->
+
+```{r}
+# create preprocess recipe
+rec <- recipe(passenger ~ ., data = data_train) %>% 
+  step_rm(date) %>% 
+  step_log(passenger) %>% 
+  step_normalize(passenger) %>% 
+  prep()
+
+# prepare recipes-revert functions
+rec_rev <- function(x, rec) {
+
+  means <- rec$steps[[3]]$means[["passenger"]]
+  sds <- rec$steps[[3]]$sds[["passenger"]]
+
+  x <- exp(x * sds + means)
+  x <- round(x)
+  x <- ifelse(x < 0, 0, x)
+
+  x
+
+}
+
+# get all preprocessed data
+data_train_prep <- juice(rec)
+data_val_prep <- bake(rec, data_val)
+data_test_prep <- bake(rec, data_test)
+```
+
+<!-- in development -->
+
+```{r}
+# generator settings
+batch_size <- 2
+
+# train-val-test generator
+data_train_gen <- flow_series_from_dataframe(
+  data = data_train_prep,
+  x = x,
+  y = y,
+  length_out = length_out,
+  stride = stride,
+  lookback = lookback,
+  timesteps = timesteps,
+  batch_size = batch_size,
+  mode = "training"
+)
+
+data_val_gen <- flow_series_from_dataframe(
+  data = data_val_prep,
+  x = x,
+  y = y,
+  length_out = length_out,
+  stride = stride,
+  lookback = lookback,
+  timesteps = timesteps,
+  batch_size = batch_size,
+  mode = "training"
+)
+
+data_test_gen <- flow_series_from_dataframe(
+  data = data_test_prep,
+  x = x,
+  y = y,
+  length_out = length_out,
+  stride = stride,
+  lookback = lookback,
+  timesteps = timesteps,
+  batch_size = batch_size,
+  mode = "training"
+)
+```
+
+<!-- in development -->
+
+```{r}
+# define input layer
+input <- layer_input(name = "input", shape = c(timesteps, length(x)))
+
+# define hidden layers
+cnn1 <- input %>% 
+  layer_conv_1d(name = "cnn_1_1", filters = 32, kernel_size = 12, padding = "same") %>% 
+  layer_activation_leaky_relu(name = "cnn_1_1_act") %>% 
+  layer_flatten(name = "cnn_1_1_flat")
+
+cnn2 <- input %>% 
+  layer_conv_1d(name = "cnn_2_1", filters = 32, kernel_size = 3, padding = "same") %>% 
+  layer_activation_leaky_relu(name = "cnn_2_1_act") %>% 
+  layer_flatten(name = "cnn_2_1_flat")
+
+cnn <- list(cnn1, cnn2) %>% 
+  layer_concatenate(name = "cnn_concat") %>% 
+  layer_dropout(name = "cnn_dp", rate = 0.1)
+
+hiddens <- cnn %>% 
+  layer_dense(name = "dense_1", units = 64) %>% 
+  layer_activation_leaky_relu(name = "dense_1_act") %>% 
+  layer_dropout(name = "dense_1_dp", rate = 0.1)
+
+# define output layers
+output <- hiddens %>%
+  layer_dense(name = "output", units = length(y) * length_out) %>% 
+  layer_reshape(name = "output_reshape", target_shape = c(length_out, 1))
+
+# wrap-up to full model
+model <- keras_model(inputs = input, outputs = output)
+
+# compile the model
+model %>% compile(
+  optimizer = optimizer_adam(lr = 0.0001),
+  loss = "mean_absolute_error"
+)
+
+# model summary
+summary(model)
+```
+
+<!-- in development -->
+
+```{r}
+# get generator meta
+steps_per_epoch <- generator_meta(data_train_gen, "steps_to_all")
+validation_steps <- generator_meta(data_val_gen, "steps_to_all")
+
+# fit the model
+history <- model %>% fit_generator(
+  generator = data_train_gen,
+  steps_per_epoch = steps_per_epoch,
+  epochs = 100,
+  validation_data = data_val_gen,
+  validation_steps = validation_steps
+)
+
+# visualize training results
+plot(history)
+```
+
+<!-- in development -->
+
+```{r}
+# get prediction on train
+pred_train <- model %>% 
+  predict_generator(
+    generator = generator_mode(data_train_gen, "prediction"),
+    steps = generator_meta(data_train_gen, "steps_to_all")
+  )
+
+pred_train_vec <- NULL
+
+for (i in 1:dim(pred_train)[1]) {
+  
+  pred_train_vec <- c(pred_train_vec, pred_train[i, 1:12, 1])
+  
+}
+
+pred_train <- tibble(
+  passenger = pred_train_vec
+)
+
+pred_train <- pred_train %>% 
+  mutate(
+    date = tail(data_train$date, nrow(pred_train)),
+    passenger = rec_rev(passenger, rec)
+  )
+
+# get prediction on validation
+pred_val <- model %>% 
+  predict_generator(
+    generator = generator_mode(data_val_gen, "prediction"),
+    steps = generator_meta(data_val_gen, "steps_to_all")
+  )
+
+pred_val_vec <- NULL
+
+for (i in 1:dim(pred_val)[1]) {
+  
+  pred_val_vec <- c(pred_val_vec, pred_val[i, 1:12, 1])
+  
+}
+
+pred_val <- tibble(
+  passenger = pred_val_vec
+)
+
+pred_val <- pred_val %>% 
+  mutate(
+    date = tail(data_val$date, nrow(pred_val)),
+    passenger = rec_rev(passenger, rec)
+  )
+
+# get prediction on test
+pred_test <- model %>% 
+  predict_generator(
+    generator = generator_mode(data_test_gen, "prediction"),
+    steps = generator_meta(data_test_gen, "steps_to_all")
+  )
+
+pred_test_vec <- NULL
+
+for (i in 1:dim(pred_test)[1]) {
+  
+  pred_test_vec <- c(pred_test_vec, pred_test[i, 1:12, 1])
+  
+}
+
+pred_test <- tibble(
+  passenger = pred_test_vec
+)
+
+pred_test <- pred_test %>% 
+  mutate(
+    date = tail(data_test$date, nrow(pred_test)),
+    passenger = rec_rev(passenger, rec)
+  )
+```
+
+<!-- in development -->
+
+```{r}
+# wrap-up all data
+data_list <- list(
+  "Actual" = airpassenger_df,
+  "Prediction-Train" = pred_train,
+  "Prediction-Validation" = bind_rows(tail(pred_train, 1), pred_val),
+  "Prediction-Test" = bind_rows(tail(pred_val, 1), pred_test)
+)
+
+# prepare visualization data
+data_viz <- bind_rows(data_list, .id = "series") %>% 
+  mutate(series = factor(series, levels = c(
+    "Actual",
+    "Prediction-Train",
+    "Prediction-Validation",
+    "Prediction-Test"
+  )))
+
+# visualize
+ggplot(data_viz, aes(x = date, y = passenger)) +
+  geom_line(aes(colour = series)) +
+  labs(x = NULL, y = NULL, colour = NULL) +
+  theme_minimal() +
+  theme(legend.position = "top") +
+  scale_colour_manual(values = c(
+    "Actual" = "black",
+    "Prediction-Train" = "blue",
+    "Prediction-Validation" = "green",
+    "Prediction-Test" = "red"
+  ))
+```
+
+<!-- in development -->
+
+## References

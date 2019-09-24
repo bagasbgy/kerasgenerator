@@ -4,3 +4,11 @@ authors:
     href: https://bagasbgy.com
 development:
   mode: auto
+reference:
+  - title: Data generator for supervised time series
+    contents:
+      - flow_series_from_dataframe
+  - title: Tools for working with data generator
+    contents:
+      - generator_meta
+      - generator_mode

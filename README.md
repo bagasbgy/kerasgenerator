@@ -11,7 +11,8 @@ status](https://travis-ci.org/bagasbgy/kerasgenerator.svg?branch=master)](https:
 
 The `kerasgenerator` package provided a collection of data generators
 that could help in data generating process for various deep learning
-tasks using `keras`.
+tasks using `keras`. For more information, please check provided
+articles in [the package website](https://kerasgenerator.bagasbgy.com).
 
 ## Installation
 
