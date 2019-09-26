@@ -2,10 +2,13 @@
 % Please edit documentation in R/flow-series.R
 \name{flow_series_from_dataframe}
 \alias{flow_series_from_dataframe}
+\alias{tidy_prediction.series_generator}
 \title{Setup a time series data generator specification}
 \usage{
 flow_series_from_dataframe(data, x, y, length_out, stride, lookback,
   timesteps, batch_size = 32, mode = "training")
+
+\method{tidy_prediction}{series_generator}(generator, prediction, ...)
 }
 \arguments{
 \item{data}{A \code{tibble} or \code{data.frame}.}
@@ -27,6 +30,13 @@ flow_series_from_dataframe(data, x, y, length_out, stride, lookback,
 \item{mode}{A \code{character} vector of length one which specify
 the generator behaviour: either \code{"training"} or \code{"prediction"}.
 See details for further information.}
+
+\item{generator}{A reference data generator generated from
+\code{kerasgenerator} package.}
+
+\item{prediction}{A \code{matrix} or an \code{array} containing the prediction results}
+
+\item{...}{Further argument for specific generators. See details.}
 }
 \value{
 A \code{function} which could generate batches of x and/or y arrays

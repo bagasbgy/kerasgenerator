@@ -19,7 +19,10 @@ Depends:
   R (>= 3.5.0)
 Imports:
   methods,
-  tibble
+  dplyr,
+  tibble,
+  tidyr
 Suggests:
-    testthat (>= 2.1.0),
-    rmarkdown
+  keras,
+  testthat (>= 2.1.0),
+  rmarkdown

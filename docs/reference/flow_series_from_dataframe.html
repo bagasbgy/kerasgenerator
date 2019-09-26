@@ -18,11 +18,10 @@
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+
 <!-- Bootstrap -->
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha256-916EbMg70RQy9LHiGkXzG8hSg9EdNy97GazNG/aiY1w=" crossorigin="anonymous" />
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
+<link href="../bgypkg.css" rel="stylesheet">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
 <!-- Font Awesome icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous" />
@@ -38,15 +37,11 @@
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../pkgdown.js"></script>
-
-
-
-  <link href="../extra.css" rel="stylesheet">
-  
+<link href="../bgypkg-2.css" rel="stylesheet">
 
 <meta property="og:title" content="Setup a time series data generator specification — flow_series_from_dataframe" />
 <meta property="og:description" content="Setup a time series data generator specification" />
-<meta property="og:image" content="/logo.png" />
+<meta property="og:image" content="https://kerasgenerator.bagasbgy.com/logo.png" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -60,8 +55,6 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
-
-
 
   </head>
 
@@ -77,21 +70,18 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">kerasgenerator</a>
-        <span class="version label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased version">0.0.0.9000</span>
-      </span>
-    </div>
 
+      <div class="navbar-brand-container">
+        <a class="navbar-brand" href="../index.html">kerasgenerator</a>
+        <div class="info">
+          <span class="partof">part of <a href="https://bagasbgy.com">bagasbgy's</a></span>
+          <span class="version version-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased version">0.0.0.9000</span>
+        </div>
+      </div>
+    </div>
     <div id="navbar" class="navbar-collapse collapse">
-      <ul class="nav navbar-nav">
+      <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
-<li>
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
@@ -102,15 +92,17 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/timeseries.html">Data Generator for Supervised Time Series using Keras</a>
+      <a href="../articles/timeseries.html">Data Generator for Supervised Time Series</a>
     </li>
   </ul>
 </li>
+        <li>
+  <a href="https://github.com/bagasbgy/kerasgenerator">
+    <span class="fa fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
-      <ul class="nav navbar-nav navbar-right">
-        
-      </ul>
-      
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -132,7 +124,10 @@
     </div>
 
     <pre class="usage"><span class='fu'>flow_series_from_dataframe</span>(<span class='no'>data</span>, <span class='no'>x</span>, <span class='no'>y</span>, <span class='no'>length_out</span>, <span class='no'>stride</span>, <span class='no'>lookback</span>,
-  <span class='no'>timesteps</span>, <span class='kw'>batch_size</span> <span class='kw'>=</span> <span class='fl'>32</span>, <span class='kw'>mode</span> <span class='kw'>=</span> <span class='st'>"training"</span>)</pre>
+  <span class='no'>timesteps</span>, <span class='kw'>batch_size</span> <span class='kw'>=</span> <span class='fl'>32</span>, <span class='kw'>mode</span> <span class='kw'>=</span> <span class='st'>"training"</span>)
+
+<span class='co'># S3 method for series_generator</span>
+<span class='fu'><a href='tidy_prediction.html'>tidy_prediction</a></span>(<span class='no'>generator</span>, <span class='no'>prediction</span>, <span class='no'>...</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -174,6 +169,19 @@
       <td><p>A <code>character</code> vector of length one which specify
 the generator behaviour: either <code>"training"</code> or <code>"prediction"</code>.
 See details for further information.</p></td>
+    </tr>
+    <tr>
+      <th>generator</th>
+      <td><p>A reference data generator generated from
+<code>kerasgenerator</code> package.</p></td>
+    </tr>
+    <tr>
+      <th>prediction</th>
+      <td><p>A <code>matrix</code> or an <code>array</code> containing the prediction results</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>Further argument for specific generators. See details.</p></td>
     </tr>
     </table>
 
@@ -225,12 +233,15 @@ See details for further information.</p></td>
 
 
       <footer>
-      <div class="copyright">
-  <p>Developed by <a href='https://bagasbgy.com'>R. Dimas Bagas Herlambang</a>.</p>
+      <div class="bgypkg">
+  <p>kerasgenerator is a part of <strong>bagasbgy's packages</strong>. Learn more at <a href="https://bagasbgy.com">bagasbgy.com</a>.</p>
 </div>
 
-<div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
+<div class="author">
+  <p>
+    Developed by <a href='https://bagasbgy.com'>R. Dimas Bagas Herlambang</a>.
+    Site built by <a href="https://pkgdown.r-lib.org">pkgdown</a>.
+  </p>
 </div>
 
       </footer>

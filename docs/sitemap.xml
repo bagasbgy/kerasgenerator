@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://kerasgenerator.bagasbgy.com/index.html</loc>
+  </url>
+  <url>
+    <loc>https://kerasgenerator.bagasbgy.com/reference/flow_series_from_dataframe.html</loc>
+  </url>
+  <url>
+    <loc>https://kerasgenerator.bagasbgy.com/reference/generator_meta.html</loc>
+  </url>
+  <url>
+    <loc>https://kerasgenerator.bagasbgy.com/reference/generator_mode.html</loc>
+  </url>
+  <url>
+    <loc>https://kerasgenerator.bagasbgy.com/reference/tidy_prediction.html</loc>
+  </url>
+  <url>
+    <loc>https://kerasgenerator.bagasbgy.com/articles/timeseries.html</loc>
+  </url>
+</urlset>

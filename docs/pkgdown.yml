@@ -3,4 +3,7 @@ pkgdown: 1.4.1
 pkgdown_sha: ~
 articles:
   timeseries: timeseries.html
+urls:
+  reference: https://kerasgenerator.bagasbgy.com/reference
+  article: https://kerasgenerator.bagasbgy.com/articles
 

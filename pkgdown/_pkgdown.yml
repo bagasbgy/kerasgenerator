@@ -1,9 +1,28 @@
-destination: docs
+url: https://kerasgenerator.bagasbgy.com
+
 authors:
   R. Dimas Bagas Herlambang:
     href: https://bagasbgy.com
-development:
-  mode: auto
+
+template:
+  package: bgypkg
+
+home:
+  strip_header: true
+
+navbar:
+  type: default
+  left:
+  - text: Reference
+    href: reference/index.html
+  - text: Articles
+    menu:
+    - text: Data Generator for Supervised Time Series
+      href: articles/timeseries.html
+  right:
+  - icon: fa-github fa-lg
+    href: https://github.com/bagasbgy/kerasgenerator
+
 reference:
   - title: Data generator for supervised time series
     contents:
@@ -12,3 +31,10 @@ reference:
     contents:
       - generator_meta
       - generator_mode
+      - tidy_prediction
+
+destination: docs
+
+development:
+  mode: auto
+

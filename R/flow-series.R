@@ -162,7 +162,55 @@ flow_series_from_dataframe <- function(data, x, y, length_out, stride,
 
   }
 
+  # readjust generator class
+  class(results) <- c(class(results), "series_generator")
+
   # return the generator
+  results
+
+}
+
+# tidy prediction ---------------------------------------------------------
+
+#' @rdname flow_series_from_dataframe
+#'
+#' @inheritParams tidy_prediction
+#'
+#' @export
+
+tidy_prediction.series_generator <- function(generator, prediction, ...) {
+
+  # get meta data
+  y <- generator_meta(generator, "y")
+
+  # start tidying
+  results <- NULL
+
+  for (i in 1:dim(prediction)[3]) {
+
+    result <- NULL
+
+    for (j in 1:dim(prediction)[1]) {
+
+      sample_tbl <- tibble(
+        sample = j,
+        steps = 1:dim(prediction)[2],
+        series = y[i],
+        values = prediction[j, , i]
+      )
+
+      result <- bind_rows(result, sample_tbl)
+
+    }
+
+    results <- bind_rows(results, result)
+
+  }
+
+  # readjust data direction
+  results <- spread(results, key = "series", value = "values")
+
+  # return the results
   results
 
 }
