@@ -5815,25 +5815,21 @@ button.close {
   .hidden-print {
     display: none !important; } }
 
-/*!
- * tidyverse theme
- * Copyright 2016 RStudio, Inc.
- */
 .navbar {
   border: none;
   -webkit-box-shadow: 0 3px 15px 0px rgba(0, 0, 0, 0.1);
   box-shadow: 0 3px 15px 0px rgba(0, 0, 0, 0.1);
   min-height: 50px;
-  padding: 5px 0; }
+  padding: 5px 0;}
   .navbar-brand {
     font-family: "Source Code Pro", Menlo, Monaco, Consolas, "Courier New", monospace;
     font-weight: normal;
-    font-size: 32px;
-    padding: 0 0 0 54px;
+    font-size: 24px;
+    padding: 0 0 0 45px;
     height: 50px;
     line-height: 50px;
-    background-image: url(logo.svg);
-    background-size: 32px auto;
+    background-image: url('logo.png'), url('logo.svg');
+    background-size: 24px auto;
     background-repeat: no-repeat;
     background-position: 15px center; }
   .navbar-nav li a {

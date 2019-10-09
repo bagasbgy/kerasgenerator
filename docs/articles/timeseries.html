@@ -85,7 +85,7 @@
       <h1>Data Generator for Supervised Time Series</h1>
                         <h4 class="author">R. Dimas Bagas Herlambang</h4>
             
-            <h4 class="date">September 26, 2019</h4>
+            <h4 class="date">October 9, 2019</h4>
       
       
       <div class="hidden name"><code>timeseries.Rmd</code></div>
@@ -461,16 +461,16 @@
 <a class="sourceLine" id="cb12-11" data-line-number="11"><span class="co">#&gt; # A tibble: 96 x 3</span></a>
 <a class="sourceLine" id="cb12-12" data-line-number="12"><span class="co">#&gt;    sample steps passenger</span></a>
 <a class="sourceLine" id="cb12-13" data-line-number="13"><span class="co">#&gt;     &lt;int&gt; &lt;int&gt;     &lt;dbl&gt;</span></a>
-<a class="sourceLine" id="cb12-14" data-line-number="14"><span class="co">#&gt;  1      1     1    -0.985</span></a>
-<a class="sourceLine" id="cb12-15" data-line-number="15"><span class="co">#&gt;  2      2     1    -0.887</span></a>
-<a class="sourceLine" id="cb12-16" data-line-number="16"><span class="co">#&gt;  3      3     1    -0.700</span></a>
-<a class="sourceLine" id="cb12-17" data-line-number="17"><span class="co">#&gt;  4      4     1    -0.743</span></a>
-<a class="sourceLine" id="cb12-18" data-line-number="18"><span class="co">#&gt;  5      5     1    -0.732</span></a>
-<a class="sourceLine" id="cb12-19" data-line-number="19"><span class="co">#&gt;  6      6     1    -0.493</span></a>
-<a class="sourceLine" id="cb12-20" data-line-number="20"><span class="co">#&gt;  7      7     1    -0.293</span></a>
-<a class="sourceLine" id="cb12-21" data-line-number="21"><span class="co">#&gt;  8      8     1    -0.322</span></a>
-<a class="sourceLine" id="cb12-22" data-line-number="22"><span class="co">#&gt;  9      9     1    -0.412</span></a>
-<a class="sourceLine" id="cb12-23" data-line-number="23"><span class="co">#&gt; 10     10     1    -0.767</span></a>
+<a class="sourceLine" id="cb12-14" data-line-number="14"><span class="co">#&gt;  1      1     1    -1.05 </span></a>
+<a class="sourceLine" id="cb12-15" data-line-number="15"><span class="co">#&gt;  2      2     1    -0.903</span></a>
+<a class="sourceLine" id="cb12-16" data-line-number="16"><span class="co">#&gt;  3      3     1    -0.684</span></a>
+<a class="sourceLine" id="cb12-17" data-line-number="17"><span class="co">#&gt;  4      4     1    -0.790</span></a>
+<a class="sourceLine" id="cb12-18" data-line-number="18"><span class="co">#&gt;  5      5     1    -0.776</span></a>
+<a class="sourceLine" id="cb12-19" data-line-number="19"><span class="co">#&gt;  6      6     1    -0.457</span></a>
+<a class="sourceLine" id="cb12-20" data-line-number="20"><span class="co">#&gt;  7      7     1    -0.297</span></a>
+<a class="sourceLine" id="cb12-21" data-line-number="21"><span class="co">#&gt;  8      8     1    -0.340</span></a>
+<a class="sourceLine" id="cb12-22" data-line-number="22"><span class="co">#&gt;  9      9     1    -0.485</span></a>
+<a class="sourceLine" id="cb12-23" data-line-number="23"><span class="co">#&gt; 10     10     1    -0.786</span></a>
 <a class="sourceLine" id="cb12-24" data-line-number="24"><span class="co">#&gt; # … with 86 more rows</span></a></code></pre></div>
 <p>So, if we want to visualize the results, we can use <code><a href="../reference/tidy_prediction.html">tidy_prediction()</a></code> to prepare the prediction <code>array</code> into a tidied <code>tibble</code>, and continue with further data post-processing parts:</p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" data-line-number="1"><span class="co"># get prediction on train</span></a>
@@ -520,16 +520,16 @@
 <a class="sourceLine" id="cb13-45" data-line-number="45"><span class="co">#&gt; # A tibble: 10 x 4</span></a>
 <a class="sourceLine" id="cb13-46" data-line-number="46"><span class="co">#&gt;    sample steps passenger date      </span></a>
 <a class="sourceLine" id="cb13-47" data-line-number="47"><span class="co">#&gt;     &lt;int&gt; &lt;int&gt;     &lt;dbl&gt; &lt;date&gt;    </span></a>
-<a class="sourceLine" id="cb13-48" data-line-number="48"><span class="co">#&gt;  1      1     1       155 1951-01-01</span></a>
-<a class="sourceLine" id="cb13-49" data-line-number="49"><span class="co">#&gt;  2      2     1       161 1951-02-01</span></a>
-<a class="sourceLine" id="cb13-50" data-line-number="50"><span class="co">#&gt;  3      3     1       173 1951-03-01</span></a>
-<a class="sourceLine" id="cb13-51" data-line-number="51"><span class="co">#&gt;  4      4     1       171 1951-04-01</span></a>
-<a class="sourceLine" id="cb13-52" data-line-number="52"><span class="co">#&gt;  5      5     1       171 1951-05-01</span></a>
-<a class="sourceLine" id="cb13-53" data-line-number="53"><span class="co">#&gt;  6      6     1       188 1951-06-01</span></a>
+<a class="sourceLine" id="cb13-48" data-line-number="48"><span class="co">#&gt;  1      1     1       151 1951-01-01</span></a>
+<a class="sourceLine" id="cb13-49" data-line-number="49"><span class="co">#&gt;  2      2     1       160 1951-02-01</span></a>
+<a class="sourceLine" id="cb13-50" data-line-number="50"><span class="co">#&gt;  3      3     1       175 1951-03-01</span></a>
+<a class="sourceLine" id="cb13-51" data-line-number="51"><span class="co">#&gt;  4      4     1       167 1951-04-01</span></a>
+<a class="sourceLine" id="cb13-52" data-line-number="52"><span class="co">#&gt;  5      5     1       168 1951-05-01</span></a>
+<a class="sourceLine" id="cb13-53" data-line-number="53"><span class="co">#&gt;  6      6     1       191 1951-06-01</span></a>
 <a class="sourceLine" id="cb13-54" data-line-number="54"><span class="co">#&gt;  7      7     1       203 1951-07-01</span></a>
-<a class="sourceLine" id="cb13-55" data-line-number="55"><span class="co">#&gt;  8      8     1       201 1951-08-01</span></a>
-<a class="sourceLine" id="cb13-56" data-line-number="56"><span class="co">#&gt;  9      9     1       194 1951-09-01</span></a>
-<a class="sourceLine" id="cb13-57" data-line-number="57"><span class="co">#&gt; 10     10     1       169 1951-10-01</span></a></code></pre></div>
+<a class="sourceLine" id="cb13-55" data-line-number="55"><span class="co">#&gt;  8      8     1       200 1951-08-01</span></a>
+<a class="sourceLine" id="cb13-56" data-line-number="56"><span class="co">#&gt;  9      9     1       189 1951-09-01</span></a>
+<a class="sourceLine" id="cb13-57" data-line-number="57"><span class="co">#&gt; 10     10     1       168 1951-10-01</span></a></code></pre></div>
 <p>With all tidied data, we can visualize the actual and prediction results:</p>
 <div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" data-line-number="1"><span class="co"># wrap-up all data</span></a>
 <a class="sourceLine" id="cb14-2" data-line-number="2">data_list &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/list.html">list</a></span>(</a>

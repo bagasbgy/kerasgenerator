@@ -3,11 +3,8 @@ h1 {font-size: 40px;}
 h2 {font-size: 30px;}
 h3 {font-size: 23px;}
 
-.contents .page-header {
-  margin-top: 10px;
-}
+.contents .page-header {margin-top: 10px;}
 
-/* reduce h3 margin for proper nesting under h2 */
 .contents h3 {margin-top: -60px}
 
 .ref-arguments th {vertical-align: top;}
@@ -17,19 +14,22 @@ h3 {font-size: 23px;}
 .navbar .info {
   float: left;
   height: 50px;
-  width: 140px;
-  font-size: 80%;
+  width: 100px;
+  font-size: 75%;
   position: relative;
-  margin-left: 5px;
+  margin-left: 10px;
 }
+
 .navbar .info .partof {
   position: absolute;
-  top: 0;
+  top: 5px;
 }
+
 .navbar .info .version {
   position: absolute;
-  bottom: 0;
+  bottom: 5px;
 }
+
 .navbar .info .version-danger {
   font-weight: bold;
   color: orange;
@@ -48,6 +48,7 @@ h3 {font-size: 23px;}
 .navbar-nav li a {
   padding-bottom: 10px;
 }
+
 .navbar-default .navbar-nav > .active > a,
 .navbar-default .navbar-nav > .active > a:hover,
 .navbar-default .navbar-nav > .active > a:focus {
@@ -61,17 +62,19 @@ footer {
   margin-top: 45px;
   padding: 35px 0 36px;
   border-top: 1px solid #e5e5e5;
-
   display: flex;
   color: #666;
 }
+
 footer p {
   margin-bottom: 0;
 }
+
 footer .bgypkg {
   flex: 1;
   margin-right: 1em;
 }
+
 footer .author {
   flex: 1;
   text-align: right;
